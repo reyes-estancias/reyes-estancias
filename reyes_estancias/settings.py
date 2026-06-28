@@ -102,7 +102,6 @@ JAZZMIN_UI_TWEAKS = {
 
 INSTALLED_APPS = [
     'jazzmin',
-    'cloudinary_storage',
     'registration',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -110,6 +109,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
     'accounts',
     'properties',
