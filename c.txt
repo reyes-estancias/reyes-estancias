@@ -1,2 +1,0 @@
-cuenta de supabase=> ReyesEstancias@gmail.com; c = Polonorte_1
-Proyecto de supabase=> Nombre: Chatbot-memory; Contraseña: Polonorte_1

@@ -1,0 +1,321 @@
+stage-0
+RUN python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt
+10s
+Collecting amqp==5.3.1 (from -r requirements.txt (line 1))
+  Using cached amqp-5.3.1-py3-none-any.whl.metadata (8.9 kB)
+Collecting asgiref==3.8.1 (from -r requirements.txt (line 2))
+  Using cached asgiref-3.8.1-py3-none-any.whl.metadata (9.3 kB)
+Collecting astroid==3.3.11 (from -r requirements.txt (line 3))
+  Using cached astroid-3.3.11-py3-none-any.whl.metadata (4.4 kB)
+Collecting billiard==4.2.1 (from -r requirements.txt (line 4))
+  Using cached billiard-4.2.1-py3-none-any.whl.metadata (4.4 kB)
+Collecting build==1.3.0 (from -r requirements.txt (line 5))
+  Using cached build-1.3.0-py3-none-any.whl.metadata (5.6 kB)
+Collecting celery==5.5.3 (from -r requirements.txt (line 6))
+  Using cached celery-5.5.3-py3-none-any.whl.metadata (22 kB)
+Collecting certifi==2025.8.3 (from -r requirements.txt (line 7))
+  Using cached certifi-2025.8.3-py3-none-any.whl.metadata (2.4 kB)
+Collecting charset-normalizer==3.4.3 (from -r requirements.txt (line 8))
+  Using cached charset_normalizer-3.4.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (36 kB)
+Collecting click==8.2.1 (from -r requirements.txt (line 9))
+  Using cached click-8.2.1-py3-none-any.whl.metadata (2.5 kB)
+Collecting click-didyoumean==0.3.1 (from -r requirements.txt (line 10))
+  Using cached click_didyoumean-0.3.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting click-plugins==1.1.1.2 (from -r requirements.txt (line 11))
+  Using cached click_plugins-1.1.1.2-py2.py3-none-any.whl.metadata (6.5 kB)
+Collecting click-repl==0.3.0 (from -r requirements.txt (line 12))
+  Using cached click_repl-0.3.0-py3-none-any.whl.metadata (3.6 kB)
+Collecting colorama==0.4.6 (from -r requirements.txt (line 13))
+  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting dill==0.3.9 (from -r requirements.txt (line 14))
+  Using cached dill-0.3.9-py3-none-any.whl.metadata (10 kB)
+Collecting Django==5.2 (from -r requirements.txt (line 15))
+  Using cached Django-5.2-py3-none-any.whl.metadata (4.1 kB)
+Collecting django-browser-reload==1.12.1 (from -r requirements.txt (line 16))
+  Using cached django_browser_reload-1.12.1-py3-none-any.whl.metadata (9.8 kB)
+Collecting django-jazzmin==3.0.5 (from -r requirements.txt (line 17))
+  Using cached django_jazzmin-3.0.5-py3-none-any.whl.metadata (6.7 kB)
+Collecting django-ckeditor==6.7.2 (from -r requirements.txt (line 18))
+  Using cached django_ckeditor-6.7.2-py3-none-any.whl.metadata (33 kB)
+Collecting django-crispy-forms==2.3 (from -r requirements.txt (line 19))
+  Using cached django_crispy_forms-2.3-py3-none-any.whl.metadata (5.1 kB)
+Collecting django-environ==0.11.2 (from -r requirements.txt (line 20))
+  Using cached django_environ-0.11.2-py2.py3-none-any.whl.metadata (11 kB)
+Collecting django-js-asset==3.1.2 (from -r requirements.txt (line 21))
+  Using cached django_js_asset-3.1.2-py3-none-any.whl.metadata (6.4 kB)
+Collecting django-ratelimit==4.1.0 (from -r requirements.txt (line 22))
+  Using cached django_ratelimit-4.1.0-py2.py3-none-any.whl.metadata (2.3 kB)
+Collecting django-redis==5.4.0 (from -r requirements.txt (line 23))
+  Using cached django_redis-5.4.0-py3-none-any.whl.metadata (32 kB)
+Collecting django-tailwind==3.8.0 (from -r requirements.txt (line 24))
+  Using cached django_tailwind-3.8.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting freezegun==1.5.5 (from -r requirements.txt (line 25))
+  Using cached freezegun-1.5.5-py3-none-any.whl.metadata (13 kB)
+Collecting gunicorn==23.0.0 (from -r requirements.txt (line 26))
+  Using cached gunicorn-23.0.0-py3-none-any.whl.metadata (4.4 kB)
+Collecting icalendar==6.3.1 (from -r requirements.txt (line 27))
+  Using cached icalendar-6.3.1-py3-none-any.whl.metadata (9.0 kB)
+Collecting idna==3.10 (from -r requirements.txt (line 28))
+  Using cached idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting iniconfig==2.1.0 (from -r requirements.txt (line 29))
+  Using cached iniconfig-2.1.0-py3-none-any.whl.metadata (2.7 kB)
+Collecting isort==6.0.1 (from -r requirements.txt (line 30))
+  Using cached isort-6.0.1-py3-none-any.whl.metadata (11 kB)
+Collecting kombu==5.5.4 (from -r requirements.txt (line 31))
+  Using cached kombu-5.5.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting mccabe==0.7.0 (from -r requirements.txt (line 32))
+  Using cached mccabe-0.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+Collecting model-bakery==1.20.5 (from -r requirements.txt (line 33))
+  Using cached model_bakery-1.20.5-py3-none-any.whl.metadata (4.7 kB)
+Collecting mysqlclient==2.2.4 (from -r requirements.txt (line 34))
+  Using cached mysqlclient-2.2.4.tar.gz (90 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting packaging==25.0 (from -r requirements.txt (line 35))
+  Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pillow==11.1.0 (from -r requirements.txt (line 36))
+  Downloading pillow-11.1.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+Collecting pip-tools==7.5.0 (from -r requirements.txt (line 37))
+  Downloading pip_tools-7.5.0-py3-none-any.whl.metadata (26 kB)
+Collecting platformdirs==4.3.7 (from -r requirements.txt (line 38))
+  Downloading platformdirs-4.3.7-py3-none-any.whl.metadata (11 kB)
+Collecting pluggy==1.6.0 (from -r requirements.txt (line 39))
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting prompt_toolkit==3.0.52 (from -r requirements.txt (line 40))
+  Downloading prompt_toolkit-3.0.52-py3-none-any.whl.metadata (6.4 kB)
+Collecting Pygments==2.19.2 (from -r requirements.txt (line 41))
+  Downloading pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+Collecting pylint==3.3.6 (from -r requirements.txt (line 42))
+  Downloading pylint-3.3.6-py3-none-any.whl.metadata (12 kB)
+Collecting pylint-celery==0.3 (from -r requirements.txt (line 43))
+  Downloading pylint-celery-0.3.tar.gz (1.9 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting pylint-django==2.6.1 (from -r requirements.txt (line 44))
+  Downloading pylint_django-2.6.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting pylint-plugin-utils==0.8.2 (from -r requirements.txt (line 45))
+  Downloading pylint_plugin_utils-0.8.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting pyproject_hooks==1.2.0 (from -r requirements.txt (line 46))
+  Downloading pyproject_hooks-1.2.0-py3-none-any.whl.metadata (1.3 kB)
+Collecting pytest==8.4.1 (from -r requirements.txt (line 47))
+  Downloading pytest-8.4.1-py3-none-any.whl.metadata (7.7 kB)
+Collecting pytest-django==4.11.1 (from -r requirements.txt (line 48))
+  Downloading pytest_django-4.11.1-py3-none-any.whl.metadata (8.3 kB)
+Collecting python-dateutil==2.9.0.post0 (from -r requirements.txt (line 49))
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-decouple==3.8 (from -r requirements.txt (line 50))
+  Downloading python_decouple-3.8-py3-none-any.whl.metadata (14 kB)
+Collecting redis==5.2.1 (from -r requirements.txt (line 51))
+  Downloading redis-5.2.1-py3-none-any.whl.metadata (9.1 kB)
+Collecting requests==2.32.5 (from -r requirements.txt (line 52))
+  Downloading requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Collecting setuptools==80.9.0 (from -r requirements.txt (line 53))
+  Downloading setuptools-80.9.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting six==1.17.0 (from -r requirements.txt (line 54))
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting sqlparse==0.5.3 (from -r requirements.txt (line 55))
+  Downloading sqlparse-0.5.3-py3-none-any.whl.metadata (3.9 kB)
+Collecting stripe==10.10.0 (from -r requirements.txt (line 56))
+  Downloading stripe-10.10.0-py2.py3-none-any.whl.metadata (2.7 kB)
+Collecting tomlkit==0.13.2 (from -r requirements.txt (line 57))
+  Downloading tomlkit-0.13.2-py3-none-any.whl.metadata (2.7 kB)
+Collecting typing_extensions==4.15.0 (from -r requirements.txt (line 58))
+  Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting tzdata==2025.2 (from -r requirements.txt (line 59))
+  Downloading tzdata-2025.2-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting urllib3==2.5.0 (from -r requirements.txt (line 60))
+  Downloading urllib3-2.5.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting vine==5.1.0 (from -r requirements.txt (line 61))
+  Downloading vine-5.1.0-py3-none-any.whl.metadata (2.7 kB)
+Collecting wcwidth==0.2.13 (from -r requirements.txt (line 62))
+  Downloading wcwidth-0.2.13-py2.py3-none-any.whl.metadata (14 kB)
+Collecting wheel==0.45.1 (from -r requirements.txt (line 63))
+  Downloading wheel-0.45.1-py3-none-any.whl.metadata (2.3 kB)
+Collecting whitenoise==6.8.2 (from -r requirements.txt (line 64))
+  Downloading whitenoise-6.8.2-py3-none-any.whl.metadata (3.6 kB)
+Requirement already satisfied: pip>=22.2 in /opt/venv/lib/python3.12/site-packages (from pip-tools==7.5.0->-r requirements.txt (line 37)) (24.2)
+Downloading amqp-5.3.1-py3-none-any.whl (50 kB)
+Downloading asgiref-3.8.1-py3-none-any.whl (23 kB)
+Downloading astroid-3.3.11-py3-none-any.whl (275 kB)
+Downloading billiard-4.2.1-py3-none-any.whl (86 kB)
+Downloading build-1.3.0-py3-none-any.whl (23 kB)
+Downloading celery-5.5.3-py3-none-any.whl (438 kB)
+Downloading certifi-2025.8.3-py3-none-any.whl (161 kB)
+Downloading charset_normalizer-3.4.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (151 kB)
+Downloading click-8.2.1-py3-none-any.whl (102 kB)
+Downloading click_didyoumean-0.3.1-py3-none-any.whl (3.6 kB)
+Downloading click_plugins-1.1.1.2-py2.py3-none-any.whl (11 kB)
+Downloading click_repl-0.3.0-py3-none-any.whl (10 kB)
+Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Downloading dill-0.3.9-py3-none-any.whl (119 kB)
+Downloading Django-5.2-py3-none-any.whl (8.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.3/8.3 MB 128.4 MB/s eta 0:00:00
+Downloading django_browser_reload-1.12.1-py3-none-any.whl (12 kB)
+Downloading django_jazzmin-3.0.5-py3-none-any.whl (2.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.6/2.6 MB 76.6 MB/s eta 0:00:00
+Downloading django_ckeditor-6.7.2-py3-none-any.whl (2.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.5/2.5 MB 73.9 MB/s eta 0:00:00
+Downloading django_crispy_forms-2.3-py3-none-any.whl (31 kB)
+Downloading django_environ-0.11.2-py2.py3-none-any.whl (19 kB)
+Downloading django_js_asset-3.1.2-py3-none-any.whl (5.9 kB)
+Downloading django_ratelimit-4.1.0-py2.py3-none-any.whl (11 kB)
+Downloading django_redis-5.4.0-py3-none-any.whl (31 kB)
+Downloading django_tailwind-3.8.0-py3-none-any.whl (12 kB)
+Downloading freezegun-1.5.5-py3-none-any.whl (19 kB)
+Downloading gunicorn-23.0.0-py3-none-any.whl (85 kB)
+Downloading icalendar-6.3.1-py3-none-any.whl (242 kB)
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Downloading isort-6.0.1-py3-none-any.whl (94 kB)
+Downloading kombu-5.5.4-py3-none-any.whl (210 kB)
+Downloading mccabe-0.7.0-py2.py3-none-any.whl (7.3 kB)
+Downloading model_bakery-1.20.5-py3-none-any.whl (24 kB)
+Downloading packaging-25.0-py3-none-any.whl (66 kB)
+Downloading pillow-11.1.0-cp312-cp312-manylinux_2_28_x86_64.whl (4.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 165.9 MB/s eta 0:00:00
+Downloading pip_tools-7.5.0-py3-none-any.whl (65 kB)
+Downloading platformdirs-4.3.7-py3-none-any.whl (18 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading prompt_toolkit-3.0.52-py3-none-any.whl (391 kB)
+Downloading pygments-2.19.2-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 123.1 MB/s eta 0:00:00
+Downloading pylint-3.3.6-py3-none-any.whl (522 kB)
+Downloading pylint_django-2.6.1-py3-none-any.whl (42 kB)
+Downloading pylint_plugin_utils-0.8.2-py3-none-any.whl (11 kB)
+Downloading pyproject_hooks-1.2.0-py3-none-any.whl (10 kB)
+Downloading pytest-8.4.1-py3-none-any.whl (365 kB)
+Downloading pytest_django-4.11.1-py3-none-any.whl (25 kB)
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Downloading python_decouple-3.8-py3-none-any.whl (9.9 kB)
+Downloading redis-5.2.1-py3-none-any.whl (261 kB)
+Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+Downloading setuptools-80.9.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 140.8 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading sqlparse-0.5.3-py3-none-any.whl (44 kB)
+Downloading stripe-10.10.0-py2.py3-none-any.whl (1.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 113.2 MB/s eta 0:00:00
+Downloading tomlkit-0.13.2-py3-none-any.whl (37 kB)
+Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Downloading tzdata-2025.2-py2.py3-none-any.whl (347 kB)
+Downloading urllib3-2.5.0-py3-none-any.whl (129 kB)
+Downloading vine-5.1.0-py3-none-any.whl (9.6 kB)
+Downloading wcwidth-0.2.13-py2.py3-none-any.whl (34 kB)
+Downloading wheel-0.45.1-py3-none-any.whl (72 kB)
+Downloading whitenoise-6.8.2-py3-none-any.whl (20 kB)
+Building wheels for collected packages: mysqlclient, pylint-celery
+  Building wheel for mysqlclient (pyproject.toml): started
+  Building wheel for mysqlclient (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+
+  
+  × Building wheel for mysqlclient (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [83 lines of output]
+      /tmp/pip-build-env-zep7705f/overlay/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+      !!
+      
+              ********************************************************************************
+              Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+      
+              By 2027-Feb-18, you need to update your project and remove deprecated calls
+              or your builds will no longer be supported.
+      
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+      
+      !!
+        corresp(dist, value, root_dir)
+      /tmp/pip-build-env-zep7705f/overlay/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+      
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+      
+              License :: OSI Approved :: GNU General Public License (GPL)
+      
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+      
+      !!
+        dist._finalize_license_expression()
+      /tmp/pip-build-env-zep7705f/overlay/lib/python3.12/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+      
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+      
+              License :: OSI Approved :: GNU General Public License (GPL)
+      
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+      
+      !!
+        self._finalize_license_expression()
+      Trying pkg-config --exists mysqlclient
+      # Options for building extension module:
+        extra_compile_args: ['-I/usr/include/mysql', '-std=c99']
+        extra_link_args: ['-lmysqlclient']
+        define_macros: [('version_info', (2, 2, 4, 'final', 0)), ('__version__', '2.2.4')]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/_exceptions.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/times.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/cursors.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/converters.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/release.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/__init__.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      copying src/MySQLdb/connections.py -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      creating build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/FLAG.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/__init__.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/ER.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/CLIENT.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/CR.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      copying src/MySQLdb/constants/FIELD_TYPE.py -> build/lib.linux-x86_64-cpython-312/MySQLdb/constants
+      running egg_info
+      writing src/mysqlclient.egg-info/PKG-INFO
+      writing dependency_links to src/mysqlclient.egg-info/dependency_links.txt
+      writing top-level names to src/mysqlclient.egg-info/top_level.txt
+      reading manifest file 'src/mysqlclient.egg-info/SOURCES.txt'
+      reading manifest template 'MANIFEST.in'
+      adding license file 'LICENSE'
+      writing manifest file 'src/mysqlclient.egg-info/SOURCES.txt'
+      copying src/MySQLdb/_mysql.c -> build/lib.linux-x86_64-cpython-312/MySQLdb
+      running build_ext
+      building 'MySQLdb._mysql' extension
+      creating build/temp.linux-x86_64-cpython-312/src/MySQLdb
+      gcc -fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall -I/nix/store/3nkb6rscay1w5ky9xziy7qnjl0i4dx25-libxcrypt-4.4.36/include -fPIC "-Dversion_info=(2, 2, 4, 'final', 0)" -D__version__=2.2.4 -I/opt/venv/include -I/nix/store/901c80rlps5q05bnjk1sj4zaz5k736nc-python3-3.12.7/include/python3.12 -c src/MySQLdb/_mysql.c -o build/temp.linux-x86_64-cpython-312/src/MySQLdb/_mysql.o -I/usr/include/mysql -std=c99
+      In file included from /usr/include/mysql/mysql.h:81,
+                       from src/MySQLdb/_mysql.c:29:
+      /usr/include/mysql/mysql_com.h:1115:10: fatal error: mysql/udf_registration_types.h: No such file or directory
+
+       1115 | #include "mysql/udf_registration_types.h"
+            |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      compilation terminated.
+      error: command '/root/.nix-profile/bin/gcc' failed with exit code 1
+
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for mysqlclient
+  Building wheel for pylint-celery (pyproject.toml): started
+  Building wheel for pylint-celery (pyproject.toml): finished with status 'done'
+  Created wheel for pylint-celery: filename=pylint_celery-0.3-py3-none-any.whl size=1749 sha256=d028eb3d26fe9b17b7fdcd526a8901a29df271231e74235a27a8be0c8aaf792c
+  Stored in directory: /root/.cache/pip/wheels/6a/ce/dc/46b82ed5347f454ad29d1b7eeb22275ed6b3d3e7b8acae0e17
+Successfully built pylint-celery
+Failed to build mysqlclient
+[notice] A new release of pip is available: 24.2 -> 26.1.2
+[notice] To update, run: pip install --upgrade pip
+ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (mysqlclient)
+Build Failed: build daemon returned an error < failed to solve: process "/bin/bash -ol pipefail -c python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt" did not complete successfully: exit code: 1 >
