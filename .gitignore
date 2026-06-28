@@ -7,3 +7,4 @@ venv/
 .DS_Store
 staticfiles/
 *.sqlite3
+errores_deploy/errores.txt
