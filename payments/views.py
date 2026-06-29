@@ -337,6 +337,31 @@ def stripe_webhook(request):
             payment.save(update_fields=["status"])
 
     
+    elif etype == "payment_intent.succeeded":
+        pi = obj
+        pi_id = pi.get("id")
+        booking_id = (pi.get("metadata") or {}).get("booking_id")
+        payment_id = (pi.get("metadata") or {}).get("payment_id")
+
+        if not (booking_id and payment_id):
+            return HttpResponse(status=200)
+
+        try:
+            booking = Booking.objects.get(pk=booking_id)
+            payment = Payment.objects.get(pk=payment_id, booking=booking)
+        except (Booking.DoesNotExist, Payment.DoesNotExist):
+            return HttpResponse(status=200)
+
+        if payment.status == "paid":
+            return HttpResponse(status=200)
+
+        with transaction.atomic():
+            payment.stripe_payment_intent_id = pi_id
+            payment.status = "paid"
+            payment.save(update_fields=["stripe_payment_intent_id", "status"])
+            booking.balance_due = compute_balance_due_snapshot(booking)
+            booking.save(update_fields=["balance_due"])
+
     elif etype in ("refund.updated", "charge.refunded"):
         refunds = []
         if etype == "refund.updated" and obj.get("object") == "refund":

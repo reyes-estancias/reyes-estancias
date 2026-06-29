@@ -96,7 +96,7 @@ def charge_offsession_with_fallback(
                 "type":payment_type
             },
             description=description,
-            # idempotency_key recomendable si llamarás esto desde cron: f"balance-{payment.id}"
+            idempotency_key=f"{payment_type}-{payment.id}",
         )
         
 
