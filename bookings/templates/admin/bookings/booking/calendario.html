@@ -1,0 +1,80 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Calendario de Reservas | Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'bookings/css/styles_calendario.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1>Calendario de Reservas</h1>
+
+<!-- Navegación de mes -->
+<div class="cal-nav">
+  <a href="?year={{ prev_year }}&month={{ prev_month }}">← {{ prev_month_name }}</a>
+  <span class="cal-nav-title">{{ month_name }} {{ year }}</span>
+  <a href="?year={{ next_year }}&month={{ next_month }}">{{ next_month_name }} →</a>
+</div>
+
+{% if property_rows %}
+<div class="cal-scroll">
+
+  <!-- Cabecera con números de día -->
+  <div class="cal-header">
+    <div class="cal-header-prop">Propiedad</div>
+    <div class="cal-header-days">
+      {% for day in days %}
+      <div class="cal-day-hdr{% if day.is_weekend %} weekend{% endif %}{% if day.is_today %} today{% endif %}">
+        <span class="wd">{{ day.weekday }}</span>
+        <span class="dn">{{ day.number }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Filas de propiedades -->
+  {% for prop in property_rows %}
+  <div class="cal-row">
+    <div class="cal-prop-name" title="{{ prop.name }}">{{ prop.name }}</div>
+    <div class="days-track">
+      <!-- Celdas de fondo -->
+      {% for day in days %}
+      <div class="day-cell{% if day.is_weekend %} weekend{% endif %}{% if day.is_today %} today{% endif %}"></div>
+      {% endfor %}
+      <!-- Bloques de reserva -->
+      {% for booking in prop.bookings %}
+      <a href="{{ booking.url }}"
+         class="booking-block {{ booking.status }}"
+         style="left: calc({{ booking.left_pct }}% + 2px); width: calc({{ booking.width_pct }}% - 4px);"
+         title="{{ booking.status_label }}: {{ booking.user }}&#10;{{ booking.arrival }} → {{ booking.departure }}">
+        {{ booking.user }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Leyenda -->
+<div class="cal-legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#16a34a"></div>
+    Confirmada
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#d97706"></div>
+    Pendiente
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#2563eb"></div>
+    Completada
+  </div>
+</div>
+
+{% else %}
+<div class="cal-empty">No hay propiedades registradas.</div>
+{% endif %}
+{% endblock %}
