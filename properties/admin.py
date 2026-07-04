@@ -48,7 +48,11 @@ class PropertyAdmin(admin.ModelAdmin):
     list_display = ("name", "max_people", "nightly_price", "airbnb_ical_url")
     inlines = [PropertyImageInline]
     change_form_template = "admin/properties/property/change_form.html"
-    search_fields = ("name", )
+    search_fields = ("name",)
+    fieldsets = (
+        (None, {"fields": ("name", "description", "beds", "max_people", "nightly_price", "address", "latitude", "longitude")}),
+        ("Integración iCal", {"fields": ("airbnb_ical_url",)}),
+    )
 
     def get_urls(self):
         urls = super().get_urls()
