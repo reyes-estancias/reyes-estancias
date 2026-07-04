@@ -59,6 +59,7 @@ JAZZMIN_SETTINGS = {
     "site_title": "Reyes Estancias",
     "site_header": "Reyes Estancias",
     "site_brand": "Reyes Estancias",
+    "site_icon": "core/img/logo-Bueno.jpeg",
     "welcome_sign": "Bienvenido al panel de administración",
     "copyright": "Reyes Estancias",
     "search_model": ["bookings.Booking", "accounts.CustomUser"],
