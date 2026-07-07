@@ -215,7 +215,7 @@ class PropertyDetail(DetailView):
             checkout = form.cleaned_data["checkout"]
             cant_personas = form.cleaned_data["cant_personas"]
             # Redirige a la misma detail con los params en la URL (GET)
-            url = f"{reverse('property_detail', args=[self.object.pk])}?checkin={checkin}&checkout={checkout}&cant_personas={cant_personas}"
+            url = f"{reverse('property_detail', args=[self.object.pk])}?checkin={checkin}&checkout={checkout}&cant_personas={cant_personas}#detalle"
             return redirect(url)
         #Si no es válido
         else:

@@ -15,111 +15,121 @@
 {% block menu_btn_variant %}text-white{% endblock %}
 {% block content %}
   <!-- HERO con imagen de fondo -->
-    <section class="relative min-h-[100svh] sm:min-h-[480px] pt-20 pb-8 md:pb-12 pr-4">
+    <section class="relative h-[100svh]">
         {% with cover=property.cover_list.0 %}
             {% if cover %}
-                {% with img=cover %}
-                <a href="{% url 'property_detail' property.id %}">
-                    <div class=" bg-slate-100 p-4">
-                    <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
-                    </div>
-                </a>
-                
-                {% endwith %}
+                <img src="{{ cover.image.url }}" alt="Foto de {{ property.name }}" class="absolute inset-0 w-full h-full object-cover" loading="eager">
             {% else %}
                 {% with img=property.all_images.0 %}
-                <div class="aspect-[4/3] bg-slate-100 overflow-hidden rounded-2xl">
                     {% if img %}
-                    <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="absolute inset-0 w-full h-full object-cover" loading="eager">
                     {% else %}
-                    <div class="w-full h-full grid place-items-center text-slate-400">Sin imagen</div>
+                        <div class="absolute inset-0 bg-slate-200 grid place-items-center text-slate-400">Sin imagen</div>
                     {% endif %}
-                </div>
                 {% endwith %}
             {% endif %}
         {% endwith %}
-        <!-- Oscurecedor para legibilidad -->
-        <div class="absolute inset-0 bg-black/55"></div>
-        <!-- Contenido -->
-        <div class="relative z-10 w-full flex flex-col items-start justify-center pb-10 text-white gap-6 pl-4 md:pl-24">
-            <h1 class="text-xl md:text-7xl uppercase tracking-[-0.06em] mb-8 md-28">{{property.name}}</h1>
-                <p class="text-md  tracking-[-0.06em]">{{property.description}}</p>
-                <div class="flex text-md md:text-xl">
-                    <p class="max-w-96 justify-start tracking-[-0.06em]">{{property.address}}</p>
-                    <p class="ml-20 md:ml-96">Capacidad | {{property.max_people}}</p>
-                </div>
-                {% if checkin and checkout and cant_personas %}
-                    {% if active_booking and deposit_payment %}
-                        <p>Ya tienes una reserva para esta propiedad.</p>
-                        <a href="{% url 'bookings_list' %}">Gestionar mi reserva</a>
-                    {% elif available %}
-                        <div>
-                            <p class="text-xl mb-2">Disponible para las fechas {{checkin}} a {{checkout}} para {{cant_personas}}</p>
-                            <button class="bg-white p-2 rounded hover:bg-gray-200"><a class="text-xl font-semibold text-black" href="{% url 'create_booking' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}">Reservar ahora</a></button>
-                        </div>
-                    {% else %}
-                        <p class="text-zinc-100 font-semibold uppercase text-md md:text-xl">Propiedad no disponible para las fechas seleccionadas</p>
-                        <button class="bg-white p-2 rounded hover:bg-gray-200"><a href="{% url 'property_detail' property.id %}" class="text-xl font-semibold text-black">Modificar fechas</a></button>
-                    {% endif %}
-                {% else %}
-                    {% if active_booking and deposit_payment %}
-                        <p>Ya tienes una reserva para esta propiedad.</p>
-                        <a href="{% url 'bookings_list' %}">Gestionar mi reserva</a>
-                    {% else %}
-                    <div class="flex flex-col gap-3 w-full">
-                        <h2 class="text-xl md:text-2xl uppercase tracking-[-0.06em]">Selecciona fechas para comprobar disponibilidad</h2>
-                        <form method="post" class=" md:max-w-[70%] grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white/90 p-4 rounded-2xl backdrop-blur md:col-start-1 text-black">
-                            {% csrf_token %}
-                            <div class="">
-                                {{ form.checkin }}
-                            </div>
-                            <div class="class">
-                                {{ form.checkout }}
-                            </div>
-                            <div class="class">
-                                {{ form.cant_personas }}
-                            </div>
-                            <div class="flex justify-end">
-                                <button class="inline-flex items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90">Comprobar</button>
-                            </div>
-                        </form>
-                        <div class="flex items-center justify-center">
-                            <img class="max-w-20 max-h-22 " src="{% static 'properties/img/white-arrow-down.svg' %}" alt="arrow-down">
+    </section>
+    <!-- SECCIÓN DOS COLUMNAS: Info izquierda | Galería derecha -->
+    <section id="detalle" class="bg-white py-12 px-4 md:px-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+
+                <!-- ── IZQUIERDA: Información + formulario (sticky en desktop) ── -->
+                <div class="w-full lg:w-[42%] lg:sticky lg:top-8 space-y-7">
+
+                    <!-- Nombre y datos rápidos -->
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">{{ property.name }}</h2>
+                        <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-500 text-sm">
+                            <span class="flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ property.address }}
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                Hasta {{ property.max_people }} personas
+                            </span>
                         </div>
                     </div>
-                    {% endif %}
-                {% endif %}
+
+                    <hr class="border-gray-200">
+
+                    <!-- Descripción -->
+                    <p class="text-gray-700 leading-relaxed text-base">{{ property.description }}</p>
+
+                    <hr class="border-gray-200">
+
+                    <!-- Disponibilidad / Reserva -->
+                    <div>
+                        {% if checkin and checkout and cant_personas %}
+                            {% if active_booking and deposit_payment %}
+                                <div class="rounded-2xl border border-gray-200 p-6 space-y-3">
+                                    <p class="font-semibold text-gray-800">Ya tienes una reserva para esta propiedad.</p>
+                                    <a href="{% url 'bookings_list' %}" class="inline-block rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white hover:opacity-85 transition-opacity">Gestionar mi reserva</a>
+                                </div>
+                            {% elif available %}
+                                <div class="rounded-2xl border border-green-200 bg-green-50 p-6 space-y-4">
+                                    <p class="font-semibold text-green-800 text-lg">¡Disponible!</p>
+                                    <p class="text-green-700 text-sm">{{ checkin }} → {{ checkout }} · {{ cant_personas }} persona{% if cant_personas != "1" %}s{% endif %}</p>
+                                    <a href="{% url 'create_booking' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}" class="inline-block rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white hover:opacity-85 transition-opacity">Reservar ahora</a>
+                                </div>
+                            {% else %}
+                                <div class="rounded-2xl border border-red-200 bg-red-50 p-6 space-y-4">
+                                    <p class="font-semibold text-red-700">No disponible para las fechas seleccionadas</p>
+                                    <a href="{% url 'property_detail' property.id %}" class="inline-block rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white hover:opacity-85 transition-opacity">Modificar fechas</a>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            {% if active_booking and deposit_payment %}
+                                <div class="rounded-2xl border border-gray-200 p-6 space-y-3">
+                                    <p class="font-semibold text-gray-800">Ya tienes una reserva para esta propiedad.</p>
+                                    <a href="{% url 'bookings_list' %}" class="inline-block rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white hover:opacity-85 transition-opacity">Gestionar mi reserva</a>
+                                </div>
+                            {% else %}
+                                <div class="rounded-2xl border border-gray-200 p-6 space-y-5">
+                                    <h3 class="text-lg font-semibold text-gray-900">Comprobar disponibilidad</h3>
+                                    <form method="post" class="space-y-3">
+                                        {% csrf_token %}
+                                        <div>{{ form.checkin }}</div>
+                                        <div>{{ form.checkout }}</div>
+                                        <div>{{ form.cant_personas }}</div>
+                                        <button type="submit" class="w-full rounded-xl bg-black px-5 py-3 font-semibold text-white hover:opacity-85 transition-opacity">Comprobar fechas</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ── DERECHA: Galería de fotos ── -->
+                <div class="w-full lg:w-[58%]">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-5">Galería</h3>
+                    {% with cover=property.cover_list.0 %}
+                    <div class="grid grid-cols-2 gap-3">
+                        {% for img in property.all_images %}
+                        {% if cover and img.id == cover.id %}
+                            {# saltar portada #}
+                        {% else %}
+                            <a href="{{ img.image.url }}"
+                               class="group glightbox glightbox-p{{ property.id }}"
+                               data-gallery="prop-{{ property.id }}"
+                               aria-label="Ampliar imagen">
+                                <figure class="overflow-hidden rounded-2xl bg-slate-100 aspect-[4/3]">
+                                    <img src="{{ img.image.url }}"
+                                         alt="Foto de {{ property.name }}"
+                                         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                                         loading="lazy">
+                                </figure>
+                            </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endwith %}
+                </div>
+
             </div>
         </div>
-    </section>
-    <section class="px-4 md:px-8 py-10">
-        <h2 class="mb-6 text-2xl md:text-3xl font-semibold tracking-tight">Galería</h2>
-
-        {% with cover=property.cover_list.0 %}
-        <div class="mx-auto max-w-6xl
-            grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4
-            md:[grid-auto-flow:dense]">
-            {% for img in property.all_images %}
-            {% if cover and img.id == cover.id %}
-                {# saltar portada #}
-            {% else %}
-                {# cada 5ª imagen ocupa 2 columnas en desktop para variar el ritmo #}
-                <a href="{{ img.image.url }}"
-                class="group {% if forloop.counter|divisibleby:'5' %} md:col-span-2 {% endif %} glightbox glightbox-p{{ property.id }}"
-                data-gallery="prop-{{ property.id }}"
-                aria-label="Ampliar imagen">
-                <figure class="overflow-hidden rounded-2xl bg-slate-200">
-                    {# Alturas coherentes: menos gigantes en desktop #}
-                    <img src="{{ img.image.url }}"
-                        alt="Foto de {{ property.name }}"
-                        class="w-full h-[260px] md:h-[360px] {% if forloop.counter|divisibleby:'5' %} md:h-[460px] {% endif %} object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                        loading="lazy">
-                </figure>
-                </a>
-            {% endif %}
-            {% endfor %}
-        </div>
-        {% endwith %}
     </section>
 
 
@@ -137,37 +147,33 @@
         const $in = document.getElementById("id_checkin");
         const $out = document.getElementById("id_checkout");
 
-        // Recibimos directamente del backend la lista de fechas bloqueadas como ["2025-10-29", "2025-10-30", ...]
-        // El JSON ya está correctamente serializado y escapado desde la vista
-        const bookedDates = {{ blocked_dates }};
+        const bookedDates = {{ blocked_dates|default:"[]" }};
 
-        // Flatpickr para check-in
-        const fpIn = flatpickr($in, {
-            dateFormat: "Y-m-d",
-            minDate: "today",
-            locale: "es",
-            disable: bookedDates,
-            onChange: function (selectedDates) {
-                if (!selectedDates.length) return;
-                const checkin = selectedDates[0];
-                const minOut = addDays(checkin, 2); // mínimo 2 noches
-                fpOut.set("minDate", minOut);
+        if ($in && $out) {
+            const fpOut = flatpickr($out, {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: "es",
+                disable: bookedDates,
+            });
 
-                // Si checkout vacío o menor que minOut, lo auto-ajustamos
-                const currentOut = fpOut.selectedDates[0];
-                if (!currentOut || currentOut < minOut) {
-                    fpOut.setDate(minOut, true);
-                }
-            },
-        });
-
-        // Flatpickr para check-out
-        const fpOut = flatpickr($out, {
-            dateFormat: "Y-m-d",
-            minDate: "today",
-            locale: "es",
-            disable: bookedDates,
-        });
+            flatpickr($in, {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: "es",
+                disable: bookedDates,
+                onChange: function (selectedDates) {
+                    if (!selectedDates.length) return;
+                    const checkin = selectedDates[0];
+                    const minOut = addDays(checkin, 2);
+                    fpOut.set("minDate", minOut);
+                    const currentOut = fpOut.selectedDates[0];
+                    if (!currentOut || currentOut < minOut) {
+                        fpOut.setDate(minOut, true);
+                    }
+                },
+            });
+        }
     </script>
 
 
