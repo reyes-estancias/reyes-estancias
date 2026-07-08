@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 from django.forms.widgets import ClearableFileInput
 from django.db.models import Max
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .models import Property, PropertyImage
 
@@ -76,11 +77,18 @@ class PropertyAdmin(admin.ModelAdmin):
                           .filter(property=prop)
                           .aggregate(m=Max("position"))["m"] or -1) + 1
 
-                created = []
-                for i, f in enumerate(files):
-                    created.append(PropertyImage.objects.create(
+                def upload_one(args):
+                    i, f = args
+                    return PropertyImage.objects.create(
                         property=prop, image=f, position=base + i
-                    ))
+                    )
+
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    futures = {executor.submit(upload_one, (i, f)): i for i, f in enumerate(files)}
+                    created = [None] * len(files)
+                    for future in as_completed(futures):
+                        i = futures[future]
+                        created[i] = future.result()
 
                 # Si no hay portada aún, marca la primera subida como cover
                 if created and not PropertyImage.objects.filter(property=prop, cover=True).exists():
