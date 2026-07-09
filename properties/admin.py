@@ -51,7 +51,8 @@ class PropertyAdmin(admin.ModelAdmin):
     change_form_template = "admin/properties/property/change_form.html"
     search_fields = ("name",)
     fieldsets = (
-        (None, {"fields": ("name", "description", "beds", "max_people", "nightly_price", "address", "latitude", "longitude")}),
+        (None, {"fields": ("name", "beds", "max_people", "nightly_price", "address", "latitude", "longitude")}),
+        ("Descripción", {"fields": ("description", "tu_propiedad", "servicios_zonas_comunes", "interaccion_viajeros", "otros_detalles")}),
         ("Integración iCal", {"fields": ("airbnb_ical_url",)}),
     )
 

@@ -31,12 +31,12 @@
         {% endwith %}
     </section>
     <!-- SECCIÓN DOS COLUMNAS: Info izquierda | Galería derecha -->
-    <section id="detalle" class="bg-white py-12 px-4 md:px-10">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+    <section id="detalle" class="bg-white py-12 lg:py-0 px-4 md:px-10 lg:h-[100svh]">
+        <div class="max-w-7xl mx-auto lg:h-full">
+            <div class="flex flex-col lg:flex-row gap-10 lg:gap-16 lg:h-full">
 
-                <!-- ── IZQUIERDA: Información + formulario (sticky en desktop) ── -->
-                <div class="w-full lg:w-[42%] lg:sticky lg:top-8 space-y-7">
+                <!-- ── IZQUIERDA: Información + formulario (scroll independiente en desktop) ── -->
+                <div class="w-full lg:w-[42%] space-y-7 lg:h-full lg:overflow-y-auto lg:py-12 lg:pr-2">
 
                     <!-- Nombre y datos rápidos -->
                     <div>
@@ -57,6 +57,38 @@
 
                     <!-- Descripción -->
                     <p class="text-gray-700 leading-relaxed text-base">{{ property.description }}</p>
+
+                    {% if property.tu_propiedad %}
+                    <hr class="border-gray-200">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 mb-2">Tu propiedad</h3>
+                        <p class="text-gray-700 leading-relaxed text-base">{{ property.tu_propiedad }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if property.servicios_zonas_comunes %}
+                    <hr class="border-gray-200">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 mb-2">Servicios y zonas comunes</h3>
+                        <p class="text-gray-700 leading-relaxed text-base">{{ property.servicios_zonas_comunes }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if property.interaccion_viajeros %}
+                    <hr class="border-gray-200">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 mb-2">Interacción con los viajeros</h3>
+                        <p class="text-gray-700 leading-relaxed text-base">{{ property.interaccion_viajeros }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if property.otros_detalles %}
+                    <hr class="border-gray-200">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 mb-2">Otros detalles importantes</h3>
+                        <p class="text-gray-700 leading-relaxed text-base">{{ property.otros_detalles }}</p>
+                    </div>
+                    {% endif %}
 
                     <hr class="border-gray-200">
 
@@ -102,8 +134,8 @@
                     </div>
                 </div>
 
-                <!-- ── DERECHA: Galería de fotos ── -->
-                <div class="w-full lg:w-[58%]">
+                <!-- ── DERECHA: Galería de fotos (scroll independiente en desktop) ── -->
+                <div class="w-full lg:w-[58%] lg:h-full lg:overflow-y-auto lg:py-12">
                     <h3 class="text-xl font-semibold text-gray-900 mb-5">Galería</h3>
                     {% with cover=property.cover_list.0 %}
                     <div class="grid grid-cols-2 gap-3">
