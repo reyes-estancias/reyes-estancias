@@ -2,75 +2,90 @@
 {% load static %}
 
 {% block content %}
-  <h1 class="mt-14 mb-14 uppercase font-bold tracking-[-0.06em] text-5xl md:text-7xl pl-4">PROPIEDADES</h1>
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3 px-3">
+<div class="max-w-7xl mx-auto px-4">
+
+  <!-- Cabecera editorial -->
+  <div class="mt-14 mb-10">
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Reyes Estancias</p>
+    <h1 class="uppercase font-bold tracking-[-0.06em] text-5xl md:text-7xl text-slate-900">Propiedades</h1>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-16">
     {% for property in property_list %}
-      <div class="flex flex-col bg-slate-100 p-2 rounded-xl border-4 border-slate-200 shadow-xl md:max-w-96 md:max-h-96 md:gap-1 mb-10 ml-5 mr-5 mt-5trasition duration-200 ease-in-out hover:translate-y-1 hover:scale-105 md:hover-scale-110 md:hover-translate-y-2">
+      <div class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-neutral-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
+
+        <!-- Imagen -->
         {% with cover=property.cover_list.0 %}
           {% if cover %}
             {% with img=cover %}
               {% if not checkin or not checkout or not cant_personas %}
-                <a href="{% url 'property_detail' property.id %}">
-                  <div class=" bg-slate-100 p-4">
-                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="w-full h-full md:h-52 object-cover" loading="lazy">
-                  </div>
+                <a href="{% url 'property_detail' property.id %}" class="block aspect-[4/3] overflow-hidden">
+                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}"
+                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
                 </a>
               {% else %}
-                <a href="{% url 'property_detail' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}">
-                  <div class=" bg-slate-100 p-4">
-                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="w-full h-full md:h-52 object-cover" loading="lazy">
-                  </div>
+                <a href="{% url 'property_detail' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}" class="block aspect-[4/3] overflow-hidden">
+                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}"
+                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
                 </a>
               {% endif %}
-              
             {% endwith %}
           {% else %}
             {% with img=property.all_images.0 %}
-              <div class="aspect-[4/3] bg-slate-100 overflow-hidden rounded-2xl">
+              <div class="aspect-[4/3] overflow-hidden">
                 {% if img %}
-                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}" class="w-full h-full object-cover" loading="lazy">
+                  <img src="{{ img.image.url }}" alt="Foto de {{ property.name }}"
+                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
                 {% else %}
-                  <div class="w-full h-full grid place-items-center text-slate-400">Sin imagen</div>
+                  <div class="w-full h-full grid place-items-center bg-slate-100 text-slate-400 text-sm">Sin imagen</div>
                 {% endif %}
               </div>
             {% endwith %}
           {% endif %}
         {% endwith %}
-        
-        <div class="flex gap-2">
-          {% if not checkin or not checkout or not cant_personas %}
-            <div class="flex flex-col gap-2 pl-4">
-              <a href="{% url 'property_detail' property.id %}"  class="uppercase font-bold tracking-[-0.06em] ">
+
+        <!-- Nombre, badge y precio -->
+        <div class="p-4 flex flex-col gap-2">
+          <div class="flex items-start justify-between gap-2">
+
+            {% if not checkin or not checkout or not cant_personas %}
+              <a href="{% url 'property_detail' property.id %}"
+                 class="uppercase font-bold tracking-[-0.06em] text-slate-900 leading-tight hover:text-slate-600 transition-colors">
                 {{ property.name }}
               </a>
-            </div>
-          {% endif %}
-          {% if checkin and checkout and cant_personas %}
-            <div class="flex flex-col gap-2 pl-4">
-              <a href="{% url 'property_detail' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}"  class="uppercase font-bold tracking-[-0.06em] ">
+            {% endif %}
+
+            {% if checkin and checkout and cant_personas %}
+              <a href="{% url 'property_detail' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}"
+                 class="uppercase font-bold tracking-[-0.06em] text-slate-900 leading-tight hover:text-slate-600 transition-colors">
                 {{ property.name }}
               </a>
-            </div>
-            {% if property.user_booking_overlap %}
-              <div class="bg-blue-200 flex justify-center items-center rounded w-20"><span class="text-blue-600 tracking-[-0.06em]">Reservado</span></div>
-            {% else %}
-              {% if property.user_has_other_booking %}
-                <div class="bg-amber-200 flex justify-center items-center rounded w-20"><span class="text-amber-600 tracking-[-0.06em]">Tienes otra reserva en esta propiedad</span></div>
-              {% elif property.available %}
-                <div class="bg-green-200 flex justify-center items-center rounded w-20"><span class="text-green-600 tracking-[-0.06em]">Disponible</span></div>
+              {% if property.user_booking_overlap %}
+                <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Reservado</span>
               {% else %}
-                  <div class="bg-red-200 flex justify-center items-center rounded w-xl"><span class="text-red-600 tracking-[-0.06em]">No disponible</span></div>
+                {% if property.user_has_other_booking %}
+                  <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Tienes otra reserva</span>
+                {% elif property.available %}
+                  <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Disponible</span>
+                {% else %}
+                  <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">No disponible</span>
+                {% endif %}
+              {% endif %}
+            {% else %}
+              {% if request.user.is_authenticated and property.user_has_future_booking %}
+                <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase">Reserva futura</span>
               {% endif %}
             {% endif %}
-          {% else %}
-            {% if request.user.is_authenticated and property.user_has_future_booking %}
-              <div class="bg-blue-200 flex justify-center items-center rounded w-20"><span class="text-blue-600 tracking-[-0.06em] uppercase">Reserva futura</span></div>
-            {% endif %}
-          {% endif %}
+
+          </div>
+          <p class="text-sm text-slate-500">
+            Desde <span class="font-semibold text-slate-700">{{ property.nightly_price }} MXN</span> / noche
+          </p>
         </div>
-        <p class="italic ml-4"> Desde {{ property.nightly_price }} MXN</p>
+
       </div>
     {% endfor %}
   </div>
-  
+
+</div>
 {% endblock %}

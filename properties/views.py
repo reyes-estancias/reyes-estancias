@@ -12,6 +12,7 @@ from django.db.models import Prefetch
 from core.tzutils import compose_aware_dt
 from django.utils import timezone
 from datetime import date, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from properties.utils.ical import fetch_ical_bookings, generate_ical_for_property
 import json
 from django.utils.safestring import mark_safe
@@ -174,9 +175,18 @@ class PropertyDetail(DetailView):
 
         #Caso 1- Viene del botón "Reservar ahora"
         if checkin and checkout and cant_personas:
-            context["available"] = self.object.is_available(checkin, checkout, cant_personas)
+            available = self.object.is_available(checkin, checkout, cant_personas)
+            context["available"] = available
             #Form precargado por si quiere cambiar fechas
             context["form"] = BookingForm(initial={"checkin" : checkin, "checkout" : checkout, "cant_personas" : cant_personas})
+            if available:
+                try:
+                    quote = self.object.quote_total(checkin, checkout)
+                    quote["discount_pct"] = int(quote["discount_rate"] * 100)
+                    context["quote"] = quote
+                    context["deposit_amount"] = (quote["total"] * Decimal("0.30")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                except Exception:
+                    pass
         else:
             #Caso 2- No ha completado el form del home, mostramos el form
             context["available"] = None

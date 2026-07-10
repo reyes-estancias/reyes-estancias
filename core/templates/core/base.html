@@ -127,54 +127,36 @@
     {% block chatbot %}
       
     {% endblock chatbot %}
-    <hr class="border-gray-300 border-0.1">
-    <footer class="grid grid-cols-1 sm:grid-cols-2 gap-4 m-3">
-      <div class="font-semibold tracking-[-0.04em] space-y-1">
-        <p class="mb-2 font-bold">CONTACTO</p>
-        
-        <div class="flex flex-col gap-2">
-          <!-- Línea 1 -->
-          <a href="tel:+523314494215"
-            class="group inline-block overflow-hidden h-[1.05em] leading-[1.05]">
-            <span class="block transform-gpu transition-transform duration-300 ease-[cubic-bezier(.2,.7,0,1)]
-                        group-hover:-translate-y-1/2">
-              <span class="block">+52 3314494215</span>
-              <span class="block" aria-hidden="true">+52 3314494215</span>
-            </span>
-          </a>
-        
+    <footer class="bg-slate-900 text-white">
+      <div class="max-w-7xl mx-auto px-6 py-8">
 
-          <!-- Línea 2 -->
-          <a href="tel:+34672921265"
-            class="group inline-block overflow-hidden h-[1.05em] leading-[1.05]">
-            <span class="block transform-gpu transition-transform duration-300 ease-[cubic-bezier(.2,.7,0,1)]
-                        group-hover:-translate-y-1/2">
-              <span class="block">+34 672921265</span>
-              <span class="block" aria-hidden="true">+34 672921265</span>
-            </span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+
+          <!-- Marca -->
+          <div>
+            <p class="text-lg font-bold tracking-tight">Reyes Estancias</p>
+            <p class="text-xs text-slate-400">Estancias de lujo en México</p>
+          </div>
+
+          <!-- Contacto -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6 text-sm text-slate-300">
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 sm:hidden">Contacto</p>
+            <a href="tel:+523314494215" class="hover:text-white transition-colors duration-150">+52 33 1449 4215</a>
+            <a href="tel:+34672921265" class="hover:text-white transition-colors duration-150">+34 672 921 265</a>
+            <a href="mailto:Reyesestancias@gmail.com" class="hover:text-white transition-colors duration-150">Reyesestancias@gmail.com</a>
+          </div>
+
+        </div>
+
+        <!-- Franja inferior -->
+        <div class="mt-6 border-t border-slate-700 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
+          <p>© 2025 Reyes Estancias. Todos los derechos reservados.</p>
+          <a href="{% url 'terminos_y_condiciones' %}"
+             class="uppercase tracking-widest font-semibold hover:text-slate-300 transition-colors duration-150">
+            Términos y Condiciones
           </a>
         </div>
-        
-        <!-- Línea 3 -->
-        <a href="mailto:Reyesestancias@gmail.com"
-          class="group inline-block overflow-hidden h-[1.05em] leading-[1.05]">
-          <span class="block transform-gpu transition-transform duration-300 ease-[cubic-bezier(.2,.7,0,1)]
-                      group-hover:-translate-y-1/2">
-            <span class="block">Reyesestancias@gmail.com</span>
-            <span class="block" aria-hidden="true">Reyesestancias@gmail.com</span>
-          </span>
-        </a>
-      </div>
 
-      <div class="sm:flex sm:justify-end sm:items-center">
-        <a href="{% url 'terminos_y_condiciones' %}"
-          class="group inline-block font-bold text-md md:text-xl uppercase tracking-[-0.04em] overflow-hidden h-[1.05em] leading-[1.05]">
-          <span class="block transform-gpu transition-transform duration-300 ease-[cubic-bezier(.2,.7,0,1)]
-                      group-hover:-translate-y-1/2">
-            <span class="block">TÉRMINOS Y CONDICIONES</span>
-            <span class="block" aria-hidden="true">TÉRMINOS Y CONDICIONES</span>
-          </span>
-        </a>
       </div>
     </footer>
   </body>

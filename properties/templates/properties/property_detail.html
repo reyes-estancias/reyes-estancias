@@ -31,12 +31,12 @@
         {% endwith %}
     </section>
     <!-- SECCIÓN DOS COLUMNAS: Info izquierda | Galería derecha -->
-    <section id="detalle" class="bg-white py-12 lg:py-0 px-4 md:px-10 lg:h-[100svh]">
-        <div class="max-w-7xl mx-auto lg:h-full">
-            <div class="flex flex-col lg:flex-row gap-10 lg:gap-16 lg:h-full">
+    <section id="detalle" class="bg-white py-12 px-4 md:px-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-10 lg:gap-16">
 
-                <!-- ── IZQUIERDA: Información + formulario (scroll independiente en desktop) ── -->
-                <div class="w-full lg:w-[42%] space-y-7 lg:h-full lg:overflow-y-auto lg:py-12 lg:pr-2">
+                <!-- ── IZQUIERDA: Información + formulario ── -->
+                <div class="w-full lg:w-[42%] space-y-7 lg:pr-2">
 
                     <!-- Nombre y datos rápidos -->
                     <div>
@@ -54,8 +54,15 @@
                     </div>
 
                     <hr class="border-gray-200">
+                    <!--Camas-->
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 mb-2">Camas</h3>
+                        <p class="text-gray-700 leading-relaxed text-base">{{ property.beds }}</p>
+                    </div>
 
+                    <hr class="border-gray-200">
                     <!-- Descripción -->
+                    <h3 class="text-base font-semibold text-gray-900 mb-2">Descripción</h3>
                     <p class="text-gray-700 leading-relaxed text-base">{{ property.description }}</p>
 
                     {% if property.tu_propiedad %}
@@ -92,6 +99,30 @@
 
                     <hr class="border-gray-200">
 
+                    <!-- Precio -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-semibold text-gray-900">Precio</h3>
+                            <select id="currency-select" class="text-xs border border-gray-200 rounded-lg px-2 pr-6 py-1.5 text-gray-600 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-gray-300 min-w-[4.5rem]">
+                                <option value="MXN">MXN</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="CAD">CAD</option>
+                                <option value="BRL">BRL</option>
+                                <option value="JPY">JPY</option>
+                                <option value="AUD">AUD</option>
+                            </select>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="nightly-mxn" class="text-2xl font-bold text-gray-900">${{ property.nightly_price|floatformat:0 }} MXN</span>
+                            <span class="text-gray-500 text-sm">/ noche</span>
+                        </div>
+                        <p id="nightly-converted" class="text-sm text-indigo-600 mt-1 hidden"></p>
+                    </div>
+
+                    <hr class="border-gray-200">
+
                     <!-- Disponibilidad / Reserva -->
                     <div>
                         {% if checkin and checkout and cant_personas %}
@@ -104,6 +135,37 @@
                                 <div class="rounded-2xl border border-green-200 bg-green-50 p-6 space-y-4">
                                     <p class="font-semibold text-green-800 text-lg">¡Disponible!</p>
                                     <p class="text-green-700 text-sm">{{ checkin }} → {{ checkout }} · {{ cant_personas }} persona{% if cant_personas != "1" %}s{% endif %}</p>
+                                    {% if quote %}
+                                    <div class="text-sm text-green-800 space-y-1.5 border-t border-green-200 pt-3">
+                                        <div class="flex justify-between">
+                                            <span>{{ quote.days }} noche{% if quote.days != 1 %}s{% endif %} × <span data-mxn="{{ quote.nightly }}">${{ quote.nightly|floatformat:0 }} MXN</span></span>
+                                            <span data-mxn="{{ quote.subtotal_base }}">${{ quote.subtotal_base|floatformat:0 }} MXN</span>
+                                        </div>
+                                        {% if quote.discount_pct %}
+                                        <div class="flex justify-between text-green-600">
+                                            <span>Descuento {{ quote.discount_pct }}%</span>
+                                            <span data-mxn="{{ quote.discount_amount }}" data-prefix="−">−${{ quote.discount_amount|floatformat:2 }} MXN</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="flex justify-between text-green-700">
+                                            <span>Limpieza</span>
+                                            <span data-mxn="{{ quote.cleaning }}">${{ quote.cleaning|floatformat:0 }} MXN</span>
+                                        </div>
+                                        <div class="flex justify-between text-green-700">
+                                            <span>IVA (16%)</span>
+                                            <span data-mxn="{{ quote.tax_amount }}">${{ quote.tax_amount|floatformat:2 }} MXN</span>
+                                        </div>
+                                        <div class="flex justify-between font-semibold border-t border-green-200 pt-2">
+                                            <span>Total</span>
+                                            <span data-mxn="{{ quote.total }}">${{ quote.total|floatformat:2 }} MXN</span>
+                                        </div>
+                                        <div class="flex justify-between text-xs text-green-600">
+                                            <span>Anticipo hoy (30%)</span>
+                                            <span data-mxn="{{ deposit_amount }}">${{ deposit_amount|floatformat:2 }} MXN</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 pt-1">El cobro se realiza en MXN. Precios en otra divisa son orientativos.</p>
+                                    </div>
+                                    {% endif %}
                                     <a href="{% url 'create_booking' property.id %}?checkin={{ checkin }}&checkout={{ checkout }}&cant_personas={{ cant_personas }}" class="inline-block rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white hover:opacity-85 transition-opacity">Reservar ahora</a>
                                 </div>
                             {% else %}
@@ -134,8 +196,8 @@
                     </div>
                 </div>
 
-                <!-- ── DERECHA: Galería de fotos (scroll independiente en desktop) ── -->
-                <div class="w-full lg:w-[58%] lg:h-full lg:overflow-y-auto lg:py-12">
+                <!-- ── DERECHA: Galería de fotos ── -->
+                <div class="w-full lg:w-[58%]">
                     <h3 class="text-xl font-semibold text-gray-900 mb-5">Galería</h3>
                     {% with cover=property.cover_list.0 %}
                     <div class="grid grid-cols-2 gap-3">
@@ -222,5 +284,126 @@
         closeButton: true,     // botón “X” visible
         slideEffect: 'fade',   // suave
         });
+    </script>
+    {{ property.nightly_price|json_script:"nightly-price-data" }}
+    <script>
+    (function () {
+        const NIGHTLY_MXN = JSON.parse(
+            document.getElementById("nightly-price-data").textContent
+        );
+        const SUPPORTED = ["MXN", "USD", "EUR", "GBP", "CAD", "BRL", "JPY", "AUD"];
+        const FX_KEY = "fx_mxn_v1";
+        const FX_TTL = 60 * 60 * 1000;
+        const LOCALE_MAP = {
+            "en-US": "USD", "es-US": "USD",
+            "en-GB": "GBP",
+            "en-CA": "CAD", "fr-CA": "CAD",
+            "pt-BR": "BRL", "ja-JP": "JPY",
+            "en-AU": "AUD", "es-MX": "MXN",
+        };
+        // Tasas aproximadas por si la API externa falla
+        const FALLBACK_RATES = {
+            MXN: 1, USD: 0.052, EUR: 0.048, GBP: 0.041,
+            CAD: 0.071, BRL: 0.29, JPY: 7.9, AUD: 0.081,
+        };
+
+        var rates = FALLBACK_RATES;
+
+        function detectCurrency() {
+            var saved = localStorage.getItem("preferred_currency");
+            if (saved && SUPPORTED.indexOf(saved) !== -1) return saved;
+            var loc = navigator.language || "en-US";
+            if (LOCALE_MAP[loc]) return LOCALE_MAP[loc];
+            var prefix = loc.split("-")[0];
+            if (["de", "fr", "it", "nl", "es"].indexOf(prefix) !== -1) return "EUR";
+            if (prefix === "ja") return "JPY";
+            return "USD";
+        }
+
+        function fmt(amount, currency) {
+            return new Intl.NumberFormat(navigator.language || "en-US", {
+                style: "currency", currency: currency,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: currency === "JPY" ? 0 : 2,
+            }).format(amount);
+        }
+
+        // Lee la divisa activa del select en cada llamada para que siempre
+        // refleje lo que hay en pantalla, incluso si se llama desde el fetch.
+        function updatePrices() {
+            var sel = document.getElementById("currency-select");
+            var currency = sel ? sel.value : "MXN";
+
+            var nightlyEl = document.getElementById("nightly-mxn");
+            var nightlyConvEl = document.getElementById("nightly-converted");
+
+            if (nightlyEl) {
+                if (currency === "MXN" || !rates || !rates[currency]) {
+                    nightlyEl.textContent = fmt(NIGHTLY_MXN, "MXN") + " MXN";
+                } else {
+                    nightlyEl.textContent = fmt(NIGHTLY_MXN * rates[currency], currency) + " " + currency;
+                }
+            }
+            if (nightlyConvEl) {
+                if (currency !== "MXN" && rates && rates[currency]) {
+                    nightlyConvEl.textContent = "= " + fmt(NIGHTLY_MXN, "MXN") + " MXN / noche";
+                    nightlyConvEl.classList.remove("hidden");
+                } else if (currency !== "MXN" && !rates) {
+                    nightlyConvEl.textContent = "Cargando tipo de cambio…";
+                    nightlyConvEl.classList.remove("hidden");
+                } else {
+                    nightlyConvEl.classList.add("hidden");
+                }
+            }
+
+            document.querySelectorAll("[data-mxn]").forEach(function (el) {
+                var mxn = parseFloat(el.dataset.mxn);
+                var prefix = el.dataset.prefix || "";
+                if (currency === "MXN" || !rates || !rates[currency]) {
+                    el.textContent = prefix + fmt(mxn, "MXN");
+                } else {
+                    el.textContent = prefix + fmt(mxn * rates[currency], currency);
+                }
+            });
+        }
+
+        var sel = document.getElementById("currency-select");
+        if (sel) {
+            // 1. Aplica divisa detectada/guardada de inmediato (sin esperar al fetch)
+            sel.value = detectCurrency();
+            updatePrices();
+
+            // 2. Listener síncrono — no depende del fetch
+            sel.addEventListener("change", function () {
+                localStorage.setItem("preferred_currency", sel.value);
+                updatePrices();
+            });
+
+            // 3. Fetch de rates — cuando llegan, refresca los precios con la divisa actual
+            (function () {
+                try {
+                    var raw = localStorage.getItem(FX_KEY);
+                    if (raw) {
+                        var cached = JSON.parse(raw);
+                        if (Date.now() - cached.ts < FX_TTL) {
+                            rates = cached.rates;
+                            updatePrices();
+                            return;
+                        }
+                    }
+                } catch (e) {}
+
+                fetch("https://api.frankfurter.app/latest?from=MXN&to=USD,EUR,GBP,CAD,BRL,JPY,AUD")
+                    .then(function (res) { return res.ok ? res.json() : null; })
+                    .then(function (data) {
+                        if (!data) return;
+                        rates = Object.assign({ MXN: 1 }, data.rates);
+                        localStorage.setItem(FX_KEY, JSON.stringify({ rates: rates, ts: Date.now() }));
+                        updatePrices();
+                    })
+                    .catch(function () {});
+            })();
+        }
+    })();
     </script>
 {% endblock %}

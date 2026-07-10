@@ -1,70 +1,128 @@
-{% extends "core/base.html" %} {% load static %} 
-{% block title %}Mis Reservas{%endblock %} 
+{% extends "core/base.html" %} {% load static %}
+{% block title %}Mis Reservas — Reyes Estancias{% endblock %}
 
 {% block content %}
+<div class="min-h-screen bg-white px-6 py-10">
+  <div class="mx-auto max-w-6xl">
 
-<h1 class="pl-4 text-xl md:text-7xl uppercase tracking-[-0.06em] mb-8 md-28">Mis Reservas</h1>
-<div class="m-6 grid grid-cols-1 gap-6 md:grid-cols-3 md:items-start md:auto-rows-fr">
-  {% for booking in bookings %}
-  <div class="flex h-full flex-col border-4 rounded-2xl p-4 gap-2">
-    <div class="flex gap-3">
-      <p class="uppercase text-xl uppercase tracking-[-0.06em] pb-2">{{ booking.property.name }}</p>
-      <p class="text-green-600">{{ booking.get_status_display }}</p>
+    <!-- Cabecera -->
+    <div class="mb-10">
+      <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Reyes Estancias</p>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Mis Reservas</h1>
     </div>
-    <div class="">
-      <p class="flex gap-2 justify-between"><span class="font-bold">Llegada</span><span>{{ booking.arrival }}</span></p>
-      <p class="flex justify-between"><span class="font-bold">Salida</span><span>{{ booking.departure }}</span></p>
-      <p class="font-bold">{{ booking.person_num }} personas</p>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:items-start md:auto-rows-fr">
+      {% for booking in bookings %}
+      <div class="flex h-full flex-col rounded-2xl border border-neutral-200 bg-slate-50 p-5 gap-4">
+
+        <!-- Nombre + estado -->
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-base font-bold uppercase tracking-tight text-slate-900">{{ booking.property.name }}</p>
+          {% if booking.status == "cancelled" %}
+            <span class="text-xs font-semibold uppercase tracking-wide text-rose-600">{{ booking.get_status_display }}</span>
+          {% elif booking.status == "expired" %}
+            <span class="text-xs font-semibold uppercase tracking-wide text-amber-600">{{ booking.get_status_display }}</span>
+          {% else %}
+            <span class="text-xs font-semibold uppercase tracking-wide text-emerald-600">{{ booking.get_status_display }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Fechas y personas -->
+        <div class="rounded-xl border border-neutral-200 bg-white px-4 py-3 space-y-1.5">
+          <p class="flex justify-between text-sm">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Llegada</span>
+            <span class="text-slate-800">{{ booking.arrival }}</span>
+          </p>
+          <p class="flex justify-between text-sm">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Salida</span>
+            <span class="text-slate-800">{{ booking.departure }}</span>
+          </p>
+          <p class="text-sm font-medium text-slate-700">{{ booking.person_num }} personas</p>
+        </div>
+
+        <!-- Importes -->
+        <div class="rounded-xl border border-neutral-200 bg-white px-4 py-3 space-y-1.5">
+          <p class="flex justify-between text-sm">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Depósito | Pago inicial</span>
+            <span class="text-slate-800">{{ booking.dep_before_chage_dates }} MXN$</span>
+          </p>
+          {% if booking.last_deposit_refund and booking.last_deposit_refund > 0 %}
+            <p class="flex justify-between text-sm">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Reembolsado</span>
+              <span class="text-slate-800">{{ booking.last_deposit_refund }} MXN$</span>
+            </p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">No hay más pagos pendientes</p>
+          {% else %}
+            <p class="flex justify-between text-sm">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pago post check-in</span>
+              <span class="text-slate-800">{{ booking.balance_due_runtime }} MXN$</span>
+            </p>
+          {% endif %}
+          <div class="pt-1.5 border-t border-neutral-100">
+            <p class="flex justify-between text-sm font-semibold">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">Total de la reserva</span>
+              <span class="text-slate-900">{{ booking.total_amount }} MXN$</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex flex-col gap-2 mt-auto">
+          {% if booking.status == "cancelled" %}
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Reserva cancelada</p>
+            <form action="{% url 'remake_booking' pk=booking.id %}" method="post">
+              {% csrf_token %}
+              <button class="w-full rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]" type="submit">
+                Rehacer reserva
+              </button>
+            </form>
+            <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+               href="{% url 'home' %}">Realizar otra</a>
+          {% elif booking.status == "expired" %}
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Su reserva expiró</p>
+            <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+               href="{% url 'home' %}">Realizar otra</a>
+          {% else %}
+            {% if booking.deposit_paid %}
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Depósito pagado correctamente</p>
+            {% elif booking.deposit_payment and booking.deposit_payment.status == "requires_action" %}
+              <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Ocurrió un error con el pago del depósito, requiere acción</p>
+              <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+                 href="{% url 'retry_deposit' booking_id=booking.id %}">Reintentar pago del depósito</a>
+            {% else %}
+              <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+                 href="{% url 'payment_start' booking_id=booking.id %}">Pagar Ahora</a>
+            {% endif %}
+            {% if booking.balance_payment and booking.balance_payment.status == "paid" %}
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Balance pagado correctamente</p>
+            {% elif booking.deposit_paid and not booking.balance_payment and not booking.last_deposit_refund %}
+              <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+                 href="{% url 'start_balance' booking_id=booking.id %}">Pagar balance</a>
+            {% elif booking.balance_payment and booking.balance_payment.status == "requires_action" %}
+              <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Ocurrió un error con el pago del balance, requiere acción</p>
+              <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+                 href="{% url 'retry_balance' booking_id=booking.id %}">Reintentar pago del balance</a>
+            {% endif %}
+          {% endif %}
+          {% if booking.status != "cancelled" and booking.status != "expired" %}
+            <a class="inline-flex justify-center items-center rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[.98]"
+               href="{% url 'cancel_booking_sure' booking_id=booking.id %}">Cancelar mi reserva</a>
+            <a class="inline-flex justify-center items-center rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[.98]"
+               href="{% url 'booking_change_dates_start' pk=booking.id %}">Modificar fechas</a>
+          {% endif %}
+        </div>
+
+      </div>
+      {% empty %}
+      <div class="col-span-3 flex flex-col items-center justify-center gap-4 py-20 text-center">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Reyes Estancias</p>
+        <h2 class="text-xl font-bold tracking-tight text-slate-900">No hay ninguna reserva en este momento</h2>
+        <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
+           href="{% url 'home' %}">Reservar</a>
+      </div>
+      {% endfor %}
     </div>
-    <div>
-      <p class="flex justify-between"><span class="font-bold">Depósito | Pago inicial</span> <span>{{ booking.dep_before_chage_dates }} MXN$</span></p>
-      {% if booking.last_deposit_refund and booking.last_deposit_refund > 0 %}
-        <p class="flex justify-between"><span class="font-bold">Reembolsado</span> <span>{{ booking.last_deposit_refund }} MXN$</span> </p>
-        <p class="font-bold">No hay más pagos pendientes</p>
-      {% else %}
-        <p class="flex justify-between"><span class="font-bold">Pago post check-in</span> {{ booking.balance_due_runtime }} MXN$</p>
-      {% endif %}
-      <p class="flex justify-between"><span class="font-bold">Total de la reserva</span> <span>{{booking.total_amount}} MXN$</span></p>
-    </div>
-    {% comment %} Depósito {% endcomment %} 
-    {% if booking.status == "cancelled" %}
-      <p class="uppercase tracking-[-0.06em]">Reserva cancelada</p>
-      <form action="{% url 'remake_booking' pk=booking.id %}" method="post">
-        {% csrf_token %}
-        <button class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90 w-full" type="submit">Rehacer reserva</button>
-      </form>
-      <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'home' %}">Realizar otra</a>
-    {% elif booking.status == "expired" %}
-      <p class="uppercase tracking-[-0.06em]">Su reserva expiró</p>
-      <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'home' %}">Realizar otra</a>
-    {% else %} 
-      {% if booking.deposit_paid %}
-        <p class="uppercase tracking-[-0.06em]">Depósito pagado correctamente</p>
-      {% elif booking.deposit_payment and booking.deposit_payment.status == "requires_action" %}
-        <p class="uppercase tracking-[-0.06em]">Ocurrió un error con el pago del depósito, requiere acción</p>
-        <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'retry_deposit' booking_id=booking.id %}">Reintentar pago del depósito</a>
-      {% else %}
-        <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'payment_start' booking_id=booking.id %}">Pagar Ahora</a>
-      {% endif %} 
-      {% if booking.balance_payment and booking.balance_payment.status == "paid" %}
-        <p>Balance pagado correctamente</p>
-      {% elif booking.deposit_paid and not booking.balance_payment and not booking.last_deposit_refund %}
-        <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'start_balance' booking_id=booking.id %}">Pagar balance</a>
-      {% elif booking.balance_payment and booking.balance_payment.status == "requires_action" %}
-        <p>Ocurrió un error con el pago del balance, requiere acción</p>
-        <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'retry_balance' booking_id=booking.id %}">Reintentar pago del balance</a>
-      {% endif %}
-    {% endif %}
-    {% if  booking.status != "cancelled" and  booking.status != "expired" %}
-      <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'cancel_booking_sure' booking_id=booking.id %}">Cancelar mi reserva</a>
-      <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'booking_change_dates_start' pk=booking.id %}">Modificar fechas</a>
-    {% endif %}
+
   </div>
-  {% empty %}
-  <div class="flex flex-col justify-center items-center gap-4">
-    <h1>No hay ninguna reserva en este momento</h1>
-    <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'home' %}">Reservar</a>
-  </div>
-  {% endfor %}
 </div>
 {% endblock %}
