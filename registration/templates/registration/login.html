@@ -1,25 +1,114 @@
 {% extends "core/base.html" %}
 {% load static %}
-{% block title %}Login{% endblock %}
+{% block title %}Iniciar sesión — Reyes Estancias{% endblock %}
+
+{% block chatbot %}{% endblock chatbot %}
+
 {% block content %}
-    <div class=" bg-white flex flex-col mx-4 mt-14 mb-14 p-4 border-4 rounded-2xl md:mx-96 md:pt-14 md:pb-24">
-        <h1 class=" mx-auto text-xl md:text-3xl uppercase tracking-[-0.06em]">Iniciar Sesión</h1>
-        <form class="flex flex-col gap-2 items-center p-4 gap-4" action="" method="post">{% csrf_token %}
-            {% if 'register' in request.GET %}
-                <p class="text-green-400">Usuario creado correctamente, Inicie Sesión para realizar la reserva</p>
-            {% endif %}
-            {% if form.non_field_errors %}
-                <p class="text-red-600">Usuario o contraseña incorrectos, pruebe de nuevo</p>
-            {% endif %}
-            <input type="text" name="username" placeholder="Username">
-            <input type="password" name="password" placeholder="Password">
-            <input class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" type="submit" value="Acceder">
-        </form>
-        <div class="mx-auto">
-            <p><a class="underline" href="{% url 'password_reset' %}">Recuperar contraseña</a></p>
-            <p><a class="underline" href="{% url 'signup' %}">Registrarse</a></p>
+<div class="flex min-h-screen bg-white">
+
+  <!-- ════ Panel izquierdo: mosaico fijo ════ -->
+  <div class="hidden lg:block lg:w-[52%] relative overflow-hidden bg-stone-950">
+
+    <!-- Fade superior para mezclar con la barra de navegación -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-stone-950 to-transparent"></div>
+
+    <div class="absolute inset-0 flex gap-3 p-3">
+
+      <!-- Columna A -->
+      <div class="flex-1 flex flex-col gap-3">
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:3/4; background:#1e3a5a;">
+          <img src="{% static 'core/img/login/foto-1.jpg' %}" class="w-full h-full object-cover" alt="México">
         </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:4/3; background:#8b7a4a;">
+          <img src="{% static 'core/img/login/foto-2.jpg' %}" class="w-full h-full object-cover" alt="México">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#4a2a6e;">
+          <img src="{% static 'core/img/login/foto-3.jpg' %}" class="w-full h-full object-cover" alt="México">
+        </div>
+      </div>
+
+      <!-- Columna B — desplazada para romper la simetría -->
+      <div class="flex-1 flex flex-col gap-3" style="margin-top: -80px;">
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#8b4a2a;">
+          <img src="{% static 'core/img/login/foto-4.jpg' %}" class="w-full h-full object-cover" alt="México">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:3/4; background:#2a5a3a;">
+          <img src="{% static 'core/img/login/foto-5.jpg' %}" class="w-full h-full object-cover" alt="México">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#2a3a5a;">
+          <img src="{% static 'core/img/login/foto-6.jpg' %}" class="w-full h-full object-cover" alt="México">
+        </div>
+      </div>
+
     </div>
-    
-    
+  </div>
+
+  <!-- ════ Panel derecho: formulario ════ -->
+  <div class="flex-1 flex items-center justify-center px-8 py-14">
+    <div class="w-full max-w-sm">
+
+      <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Reyes Estancias</p>
+      <h1 class="mb-1 text-3xl font-bold tracking-tight text-slate-900">Bienvenido de nuevo</h1>
+      <p class="mb-8 text-sm text-slate-500">Inicia sesión para gestionar tus reservas.</p>
+
+      {% if 'register' in request.GET %}
+        <div class="mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Usuario creado correctamente. Ya puedes iniciar sesión.
+        </div>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          Usuario o contraseña incorrectos, prueba de nuevo.
+        </div>
+      {% endif %}
+
+      <form class="space-y-4" action="" method="post">
+        {% csrf_token %}
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                 for="id_username">Usuario</label>
+          <input id="id_username" type="text" name="username" placeholder="Tu nombre de usuario"
+                 class="w-full rounded-xl border border-neutral-200 bg-slate-50 px-4 py-2.5 text-sm
+                        outline-none placeholder:text-neutral-400
+                        focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20
+                        transition-colors">
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                 for="id_password">Contraseña</label>
+          <input id="id_password" type="password" name="password" placeholder="Tu contraseña"
+                 class="w-full rounded-xl border border-neutral-200 bg-slate-50 px-4 py-2.5 text-sm
+                        outline-none placeholder:text-neutral-400
+                        focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20
+                        transition-colors">
+        </div>
+
+        <input type="submit" value="Acceder"
+               class="mt-2 w-full cursor-pointer rounded-xl bg-slate-900 px-5 py-3 text-sm
+                      font-semibold text-white transition-all duration-150
+                      hover:bg-slate-700 active:scale-[.98]">
+      </form>
+
+      <div class="mt-6 flex flex-col items-center gap-2 text-sm text-slate-500">
+        <a href="{% url 'password_reset' %}"
+           class="hover:text-slate-700 underline underline-offset-2">
+          ¿Olvidaste tu contraseña?
+        </a>
+        <p>
+          ¿No tienes cuenta?
+          <a href="{% url 'signup' %}"
+             class="font-semibold text-slate-900 underline underline-offset-2 hover:text-slate-600">
+            Regístrate
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
 {% endblock %}

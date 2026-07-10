@@ -1,30 +1,135 @@
 {% extends "core/base.html" %}
 {% load static %}
-{% block title %}Login{% endblock %}
+{% block title %}Registro — Reyes Estancias{% endblock %}
+
+{% block chatbot %}{% endblock chatbot %}
+
 {% block content %}
-    <div class="mx-auto md:max-w-96 border-4 border bg-white rounded-xl p-4 mb-8">
-        <h1 class="pl-4 text-xl md:text-3xl uppercase tracking-[-0.06em] text-center">Registro</h1>
-        <form method="post" class="flex flex-col gap-3 p-4">
-            {% csrf_token %}
-            {% if form.non_field_errors %}
-                <p class="rounded-lg bg-rose-50 p-2 text-sm text-rose-700">
-                {{ form.non_field_errors|striptags }}
-                </p>
-            {% endif %}
+<div class="flex min-h-screen bg-white">
 
-            {% for field in form %}
-                <label class="text-sm font-medium" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}<p class="text-xs text-neutral-500">{{ field.help_text }}</p>{% endif %}
-                {% if field.errors %}<p class="text-xs text-rose-600">{{ field.errors|striptags }}</p>{% endif %}
-            {% endfor %}
+  <!-- ════ Panel izquierdo: mosaico fijo ════ -->
+  <div class="hidden lg:block lg:w-[52%] relative overflow-hidden bg-stone-950">
 
-            <button class="mt-2 inline-flex items-center justify-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90">
-                Crear cuenta
-            </button>
-        </form>
-        <a class="underline" href="{% url 'login' %}">Volver</a>
+    <!-- Fade superior para mezclar con la barra de navegación -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-stone-950 to-transparent"></div>
+
+    <div class="absolute inset-0 flex gap-3 p-3">
+
+      <!-- Columna A: pirámides · Banco Nacional · Ángel -->
+      <div class="flex-1 flex flex-col gap-3">
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:4/3; background:#4a5a3a;">
+          <img src="{% static 'core/img/registro/foto-1.jpg' %}" class="w-full h-full object-cover" alt="Pirámides de México">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#1e5a7a;">
+          <img src="{% static 'core/img/registro/foto-2.jpg' %}" class="w-full h-full object-cover" alt="Banco Nacional de México">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#3a3a3a;">
+          <img src="{% static 'core/img/registro/foto-3.jpg' %}" class="w-full h-full object-cover" alt="Ángel de la Independencia">
+        </div>
+      </div>
+
+      <!-- Columna B: selva · vendedor · Oaxaca — desplazada para romper la simetría -->
+      <div class="flex-1 flex flex-col gap-3" style="margin-top: -80px;">
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:2/3; background:#2a3d1e;">
+          <img src="{% static 'core/img/registro/foto-4.jpg' %}" class="w-full h-full object-cover" alt="Selva mexicana">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:3/4; background:#7a2a1e;">
+          <img src="{% static 'core/img/registro/foto-5.jpg' %}" class="w-full h-full object-cover" alt="Vendedor de banderas">
+        </div>
+        <div class="w-full overflow-hidden rounded-2xl" style="aspect-ratio:3/4; background:#8b6a2a;">
+          <img src="{% static 'core/img/registro/foto-6.jpg' %}" class="w-full h-full object-cover" alt="Oaxaca">
+        </div>
+      </div>
+
     </div>
-    
-    
+  </div>
+
+  <!-- ════ Panel derecho: formulario ════ -->
+  <div class="flex-1 flex items-center justify-center px-8 py-14">
+    <div class="w-full max-w-sm">
+
+      <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Reyes Estancias</p>
+      <h1 class="mb-1 text-3xl font-bold tracking-tight text-slate-900">Crea tu cuenta</h1>
+      <p class="mb-8 text-sm text-slate-500">Únete y reserva tu próxima estancia en México.</p>
+
+      {% if form.non_field_errors %}
+        <div class="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {{ form.non_field_errors|striptags }}
+        </div>
+      {% endif %}
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Fila 1: usuario + email -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                   for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.username.errors|striptags }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                   for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.email.errors|striptags }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Fila 2: teléfono (ancho completo) -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                 for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+          {{ form.phone }}
+          {% if form.phone.errors %}
+            <p class="mt-1 text-xs text-rose-600">{{ form.phone.errors|striptags }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Fila 3: contraseñas -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                   for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.password1.errors|striptags }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                   for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.password2.errors|striptags }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Botón submit -->
+        <button type="submit"
+          class="mt-2 w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white
+                 transition-all duration-150 hover:bg-slate-700 active:scale-[.98]">
+          Crear cuenta
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-slate-500">
+        ¿Ya tienes cuenta?
+        <a href="{% url 'login' %}"
+           class="font-semibold text-slate-900 underline underline-offset-2 hover:text-slate-600">
+          Inicia sesión
+        </a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
 {% endblock %}

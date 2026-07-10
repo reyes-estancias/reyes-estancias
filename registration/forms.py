@@ -4,14 +4,19 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 class TWMixin:
-    base = "w-full rounded-xl border border-neutral-300 px-4 py-2 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-400/40"
+    base = (
+        "w-full rounded-xl border border-neutral-200 bg-slate-50 px-4 py-2.5 text-sm "
+        "outline-none placeholder:text-neutral-400 "
+        "focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20 "
+        "transition-colors"
+    )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for f in self.fields.values():
             f.widget.attrs["class"] = (f.widget.attrs.get("class","") + " " + self.base).strip()
             f.widget.attrs.setdefault("placeholder", f.label)
 
-class UserCreationFormWithEmail(UserCreationForm):
+class UserCreationFormWithEmail(TWMixin, UserCreationForm):
     email = forms.EmailField(required=True, help_text="Requerido, debe ser único")
 
     class Meta():
