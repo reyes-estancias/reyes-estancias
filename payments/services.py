@@ -1,5 +1,8 @@
 from decimal import Decimal, ROUND_HALF_UP
+import logging
 import stripe
+
+logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
@@ -172,19 +175,19 @@ def charge_offsession_with_fallback(
     
     #Enviamos email
     context = {
-            "user": booking.user,
+            "guest_name": booking.guest_name,
             "booking": booking,
-            "payment_url": session.url #nombre en el template
+            "payment_url": session.url
     }
 
     subject = f"Completa tu pago {description}"
     html_body = render_to_string("emails/retry_balance_payment.html", context)
-    
+
     send_mail(
         subject=subject,
         message="Para completar tu pago haz click en el enlace (HTML only).",
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[booking.user.email],
+        recipient_list=[booking.guest_email],
         html_message=html_body,
         fail_silently=False,
     )
@@ -496,6 +499,35 @@ def trigger_refund_for_reduction(booking, amount):
             remaining -= to_refund
 
     return result
+
+
+def send_booking_confirmation_email(booking, base_url=None):
+    """Envía email de confirmación al huésped con links de gestión por access_token."""
+    base = (base_url or getattr(settings, "SITE_BASE_URL", None) or "http://127.0.0.1:8000").rstrip("/")
+    cancel_url      = f"{base}{reverse('cancel_booking_sure_token', kwargs={'token': booking.access_token})}"
+    change_dates_url = f"{base}{reverse('booking_change_dates_start_token', kwargs={'token': booking.access_token})}"
+
+    context = {
+        "guest_name":      booking.guest_name,
+        "booking":         booking,
+        "cancel_url":      cancel_url,
+        "change_dates_url": change_dates_url,
+    }
+    html_body = render_to_string("emails/booking_confirmation.html", context)
+    try:
+        send_mail(
+            subject=f"Confirmación de reserva — {booking.property.name}",
+            message=(
+                f"Reserva confirmada: {booking.property.name} "
+                f"del {booking.arrival.date()} al {booking.departure.date()}."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[booking.guest_email],
+            html_message=html_body,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Error enviando email de confirmación para booking %s", booking.id)
 
 
 def compute_balance_due_snapshot(booking) -> Decimal:

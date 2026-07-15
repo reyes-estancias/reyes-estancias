@@ -1,0 +1,188 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Confirmar reserva — {{ property.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-10 px-4">
+  <div class="mx-auto max-w-4xl">
+
+    <!-- Cabecera -->
+    <div class="mb-8">
+      <a href="{% url 'property_detail' property.id %}"
+         class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 transition-colors">
+        ← Volver a la propiedad
+      </a>
+      <h1 class="mt-3 text-2xl font-bold tracking-tight text-slate-900">Confirmar reserva</h1>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+
+      <!-- ══ COLUMNA IZQUIERDA: resumen ══ -->
+      <div class="space-y-6">
+
+        <!-- Tarjeta propiedad + fechas -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Tu estancia</p>
+          <h2 class="text-lg font-bold text-slate-900 mb-4">{{ property.name }}</h2>
+
+          <div class="space-y-2 text-sm text-slate-700">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Llegada</span>
+              <span class="font-medium">{{ checkin }} · 15:00 h</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Salida</span>
+              <span class="font-medium">{{ checkout }} · 12:00 h</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Huéspedes</span>
+              <span class="font-medium">{{ cant_personas }} persona{% if cant_personas != "1" %}s{% endif %}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Noches</span>
+              <span class="font-medium">{{ quote.days }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta desglose de precio -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Desglose del precio</p>
+
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between text-slate-700">
+              <span>${{ quote.nightly }} × {{ quote.days }} noche{% if quote.days != 1 %}s{% endif %}</span>
+              <span>${{ quote.subtotal_base }} MXN</span>
+            </div>
+
+            {% if quote.discount_amount > 0 %}
+            <div class="flex justify-between text-emerald-600">
+              <span>Descuento ({{ quote.discount_rate|floatformat:0 }}%)</span>
+              <span>−${{ quote.discount_amount }} MXN</span>
+            </div>
+            {% endif %}
+
+            <div class="flex justify-between text-slate-700">
+              <span>Limpieza</span>
+              <span>${{ quote.cleaning }} MXN</span>
+            </div>
+
+            <div class="flex justify-between text-slate-700">
+              <span>IVA (16%)</span>
+              <span>${{ quote.tax_amount }} MXN</span>
+            </div>
+
+            <div class="mt-3 border-t border-slate-100 pt-3 flex justify-between font-bold text-slate-900">
+              <span>Total</span>
+              <span>${{ quote.total }} MXN</span>
+            </div>
+          </div>
+
+          <!-- Desglose pago -->
+          <div class="mt-4 rounded-xl bg-slate-50 p-4 space-y-1 text-sm">
+            <div class="flex justify-between text-slate-600">
+              <span>Se cobra ahora (30%)</span>
+              <span class="font-semibold text-slate-900">${{ deposit }} MXN</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Resto al llegar</span>
+              <span>${{ balance }} MXN</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ COLUMNA DERECHA: formulario huésped ══ -->
+      <div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Paso 1 de 2</p>
+          <h2 class="text-lg font-bold text-slate-900 mb-1">Datos del huésped</h2>
+          <p class="text-sm text-slate-500 mb-6">Te enviaremos la confirmación a este correo.</p>
+
+          {% if request.user.is_authenticated %}
+          <div class="mb-5 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            Reservando como <strong>{{ request.user.email }}</strong>.
+            Puedes modificar los datos si lo necesitas.
+          </div>
+          {% endif %}
+
+          {% if form.non_field_errors %}
+          <div class="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {{ form.non_field_errors|striptags }}
+          </div>
+          {% endif %}
+
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- checkin / checkout / cant_personas como campos ocultos -->
+            <input type="hidden" name="checkin"       value="{{ checkin }}">
+            <input type="hidden" name="checkout"      value="{{ checkout }}">
+            <input type="hidden" name="cant_personas" value="{{ cant_personas }}">
+
+            <!-- Nombre + Apellidos -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                       for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                  <p class="mt-1 text-xs text-rose-600">{{ form.first_name.errors|striptags }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                       for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                  <p class="mt-1 text-xs text-rose-600">{{ form.last_name.errors|striptags }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                     for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <p class="mt-1 text-xs text-rose-600">{{ form.email.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Teléfono -->
+            <div>
+              <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                     for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+              {{ form.phone }}
+              {% if form.phone.errors %}
+                <p class="mt-1 text-xs text-rose-600">{{ form.phone.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <button type="submit"
+                    class="mt-2 w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white
+                           transition-all duration-150 hover:bg-slate-700 active:scale-[.98]">
+              Continuar al pago →
+            </button>
+          </form>
+
+          {% if not request.user.is_authenticated %}
+          <p class="mt-5 text-center text-sm text-slate-500">
+            ¿Tienes cuenta?
+            <a href="{% url 'login' %}?next={{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+               class="font-semibold text-slate-900 underline underline-offset-2 hover:text-slate-600">
+              Inicia sesión
+            </a>
+            para prerellenar tus datos.
+          </p>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

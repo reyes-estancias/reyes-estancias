@@ -31,13 +31,17 @@
         </div>
     </div>
     <div class="flex gap-4 m-4">
-        <form form action="{% url 'booking_change_dates_apply' pk=booking.id %}" method="post" class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90">
+        <form action="{% if token %}{% url 'booking_change_dates_apply_token' token=token %}{% else %}{% url 'booking_change_dates_apply' pk=booking.id %}{% endif %}" method="post" class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90">
             {% csrf_token %}
             <input type="hidden" name="checkin" value="{{ checkin|date:'Y-m-d' }}">
             <input type="hidden" name="checkout" value="{{ checkout|date:'Y-m-d' }}">
             <button type="submit">Confirmar</button>
         </form>
+        {% if token %}
+        <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'booking_change_dates_start_token' token=token %}">Editar fechas</a>
+        {% else %}
         <a class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" href="{% url 'booking_change_dates_start' pk=booking.id %}">Editar fechas</a>
+        {% endif %}
     </div>
 </div>
 

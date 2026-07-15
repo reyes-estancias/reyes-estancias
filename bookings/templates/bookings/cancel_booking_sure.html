@@ -9,7 +9,11 @@
             <a class="italic" href="{% url 'terminos_y_condiciones' %}">Lea nuestras políticas de cancelacion</a>
         </div>
         <div class="flex sm:justify-center gap-4">
+            {% if token %}
+            <form action="{% url 'cancel_booking_token' token %}" method="post">
+            {% else %}
             <form action="{% url 'cancel_booking' booking_id %}" method="post">
+            {% endif %}
                 {% csrf_token %}
                 <button class="inline-flex justify-center items-center rounded-xl bg-black px-5 py-2 font-medium text-white hover:opacity-90" type="submit">Cancelar reserva</button>
             </form>

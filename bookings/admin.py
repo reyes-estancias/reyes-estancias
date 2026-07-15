@@ -1,9 +1,10 @@
 import calendar
 from datetime import date
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.urls import path, reverse
 from django.shortcuts import render
+from django.utils import timezone
 
 from properties.models import Property
 from .models import Booking, BookingChangeLog
@@ -29,6 +30,27 @@ class AdminBooking(admin.ModelAdmin):
     list_filter = ("property__name", "user__username", "arrival", "departure", "status")
     readonly_fields = ("hold_expires_at",)
     change_list_template = "admin/bookings/booking/change_list.html"
+    actions = ["action_expire_holds", "action_expire_completed"]
+
+    @admin.action(description="Expirar holds vencidos (pendientes sin pago)")
+    def action_expire_holds(self, request, queryset):
+        now = timezone.now()
+        updated = (
+            queryset
+            .filter(status="pending", hold_expires_at__isnull=False, hold_expires_at__lt=now)
+            .update(status="expired")
+        )
+        self.message_user(request, f"{updated} reserva(s) marcada(s) como expirada(s).", messages.SUCCESS)
+
+    @admin.action(description="Expirar reservas confirmadas cuya salida ya pasó")
+    def action_expire_completed(self, request, queryset):
+        now = timezone.now()
+        updated = (
+            queryset
+            .filter(status="confirmed", departure__lt=now)
+            .update(status="expired")
+        )
+        self.message_user(request, f"{updated} reserva(s) confirmada(s) marcada(s) como expirada(s).", messages.SUCCESS)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -104,7 +126,7 @@ class AdminBooking(admin.ModelAdmin):
 
             bookings_by_prop.setdefault(b.property_id, []).append({
                 "id": b.id,
-                "user": b.user.get_full_name() or b.user.username,
+                "user": (b.user.get_full_name() or b.user.email) if b.user else (b.guest_name or b.guest_email or "Invitado"),
                 "status": b.status,
                 "status_label": STATUS_LABELS.get(b.status, b.status),
                 "arrival": b.arrival.strftime("%d/%m/%Y"),

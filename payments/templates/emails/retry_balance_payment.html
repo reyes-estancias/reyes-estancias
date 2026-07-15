@@ -2,7 +2,7 @@
 <html lang="es">
   <body style="font-family: Arial, sans-serif;">
     <h2>Completa tu pago pendiente</h2>
-    <p>Hola {{ user.first_name|default:user.username }},</p>
+    <p>Hola {{ guest_name }},</p>
     <p>
       Tienes un saldo pendiente de <strong>${{ booking.balance_due }} MXN</strong> 
       para tu reserva <strong>#{{ booking.id }}</strong> en <strong>{{ booking.property.name }}</strong>

@@ -8,3 +8,10 @@ venv/
 staticfiles/
 *.sqlite3
 errores_deploy/errores.txt
+
+# Volcados de base de datos
+data.sql
+dump.json
+
+# Archivos de runtime de Celery
+celerybeat-schedule

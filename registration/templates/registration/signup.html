@@ -61,27 +61,37 @@
       <form method="post" class="space-y-4">
         {% csrf_token %}
 
-        <!-- Fila 1: usuario + email -->
+        <!-- Fila 1: nombre + apellidos -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                   for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-              <p class="mt-1 text-xs text-rose-600">{{ form.username.errors|striptags }}</p>
+                   for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.first_name.errors|striptags }}</p>
             {% endif %}
           </div>
           <div>
             <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                   for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-              <p class="mt-1 text-xs text-rose-600">{{ form.email.errors|striptags }}</p>
+                   for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.last_name.errors|striptags }}</p>
             {% endif %}
           </div>
         </div>
 
-        <!-- Fila 2: teléfono (ancho completo) -->
+        <!-- Fila 2: email (ancho completo) -->
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                 for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <p class="mt-1 text-xs text-rose-600">{{ form.email.errors|striptags }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Fila 3: teléfono (ancho completo) -->
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
                  for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>

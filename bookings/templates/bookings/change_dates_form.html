@@ -3,7 +3,7 @@
 {% comment %} <div class="sm:min-h-[480px]">
         <h1>Modificar fechas:</h1>
         <h3>Compruebe disponibilidad.</h3>
-        <form action="{% url 'booking_change_dates_preview' pk=booking.id %}" method="post">
+        <form action="{% if token %}{% url 'booking_change_dates_preview_token' token=token %}{% else %}{% url 'booking_change_dates_preview' pk=booking.id %}{% endif %}" method="post">
             {% csrf_token %}
             {{form.as_p}}
             <button type="submit">Aplicar cambio</button>
@@ -25,7 +25,7 @@
     <h1 class="uppercase text-2xl md:text-4xl font-semibold tracking-[-0.06em] mb-2">Modificar fechas</h1>
     <p class="text-slate-600 mb-6">Comprueba disponibilidad.</p>
 
-    <form action="{% url 'booking_change_dates_preview' pk=booking.id %}" method="post"
+    <form action="{% if token %}{% url 'booking_change_dates_preview_token' token=token %}{% else %}{% url 'booking_change_dates_preview' pk=booking.id %}{% endif %}" method="post"
           class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white p-4 rounded-xl ring-1 ring-slate-200 max-w-3xl">
       {% csrf_token %}
 

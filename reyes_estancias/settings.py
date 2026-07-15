@@ -247,12 +247,15 @@ LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
 
 #Email config
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = env.int('EMAIL_PORT', default=587)
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+    EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+    EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = 'no-reply@reyesestancias.com'
 
 
@@ -321,6 +324,10 @@ CELERY_BEAT_SCHEDULE = {
     "sync-property-calendars-every-30-min": {
         "task": "properties.tasks.sync_all_property_calendars",
         "schedule": crontab(minute="*/30"),  # Cada 30 minutos
+    },
+    "purge-magic-links-daily": {
+        "task": "bookings.tasks.purge_magic_links",
+        "schedule": crontab(hour=3, minute=45),  # 3:45 AM, tras las tareas de bookings
     },
 }
 CELERY_TASK_SERIALIZER = "json"

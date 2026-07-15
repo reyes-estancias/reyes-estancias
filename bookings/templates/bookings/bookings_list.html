@@ -6,10 +6,63 @@
   <div class="mx-auto max-w-6xl">
 
     <!-- Cabecera -->
-    <div class="mb-10">
+    <div class="mb-6">
       <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Reyes Estancias</p>
       <h1 class="text-3xl font-bold tracking-tight text-slate-900">Mis Reservas</h1>
     </div>
+
+    <!-- Banner de identidad -->
+    {% if is_guest_session %}
+      <!-- Invitado via magic link -->
+      <div class="mb-8 flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3">
+        <p class="text-sm text-slate-600">
+          Viendo reservas de <strong>{{ viewer_email }}</strong>
+        </p>
+        <form method="post" action="{% url 'clear_guest_session' %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold
+                         text-slate-600 transition-colors hover:bg-slate-100">
+            Cambiar correo
+          </button>
+        </form>
+      </div>
+    {% else %}
+      {% if not email_verified %}
+        <!-- Cuenta sin email verificado: no se ven reservas de invitado -->
+        {% if request.GET.verification_sent %}
+          <div class="mb-8 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3">
+            <p class="text-sm text-emerald-800">
+              Te hemos enviado un enlace de verificación a <strong>{{ viewer_email }}</strong>.
+              Revisa tu bandeja de entrada (y la carpeta de spam).
+            </p>
+          </div>
+        {% else %}
+          <div class="mb-8 flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3">
+            <p class="text-sm text-amber-800">
+              <strong>Verifica tu correo</strong> para ver también las reservas que hiciste sin cuenta
+              con <strong>{{ viewer_email }}</strong>.
+            </p>
+            <form method="post" action="{% url 'send_verification_link' %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="whitespace-nowrap rounded-lg border border-amber-300 bg-white px-3 py-1.5
+                             text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100">
+                Enviar enlace
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      {% else %}
+        <!-- Cuenta con email verificado: vinculación virtual activa -->
+        <div class="mb-8 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3">
+          <p class="text-sm text-emerald-800">
+            Mostrando todas tus reservas, incluyendo las realizadas como invitado con
+            <strong>{{ viewer_email }}</strong>.
+          </p>
+        </div>
+      {% endif %}
+    {% endif %}
 
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:items-start md:auto-rows-fr">
       {% for booking in bookings %}
@@ -88,27 +141,27 @@
             {% elif booking.deposit_payment and booking.deposit_payment.status == "requires_action" %}
               <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Ocurrió un error con el pago del depósito, requiere acción</p>
               <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
-                 href="{% url 'retry_deposit' booking_id=booking.id %}">Reintentar pago del depósito</a>
+                 href="{% url 'retry_deposit_token' token=booking.access_token %}">Reintentar pago del depósito</a>
             {% else %}
               <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
-                 href="{% url 'payment_start' booking_id=booking.id %}">Pagar Ahora</a>
+                 href="{% url 'payment_start_token' token=booking.access_token %}">Pagar Ahora</a>
             {% endif %}
             {% if booking.balance_payment and booking.balance_payment.status == "paid" %}
               <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Balance pagado correctamente</p>
             {% elif booking.deposit_paid and not booking.balance_payment and not booking.last_deposit_refund %}
               <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
-                 href="{% url 'start_balance' booking_id=booking.id %}">Pagar balance</a>
+                 href="{% url 'start_balance_token' token=booking.access_token %}">Pagar balance</a>
             {% elif booking.balance_payment and booking.balance_payment.status == "requires_action" %}
               <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Ocurrió un error con el pago del balance, requiere acción</p>
               <a class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-slate-700 active:scale-[.98]"
-                 href="{% url 'retry_balance' booking_id=booking.id %}">Reintentar pago del balance</a>
+                 href="{% url 'retry_balance_token' token=booking.access_token %}">Reintentar pago del balance</a>
             {% endif %}
           {% endif %}
           {% if booking.status != "cancelled" and booking.status != "expired" %}
             <a class="inline-flex justify-center items-center rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[.98]"
-               href="{% url 'cancel_booking_sure' booking_id=booking.id %}">Cancelar mi reserva</a>
+               href="{% url 'cancel_booking_sure_token' token=booking.access_token %}">Cancelar mi reserva</a>
             <a class="inline-flex justify-center items-center rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[.98]"
-               href="{% url 'booking_change_dates_start' pk=booking.id %}">Modificar fechas</a>
+               href="{% url 'booking_change_dates_start_token' token=booking.access_token %}">Modificar fechas</a>
           {% endif %}
         </div>
 

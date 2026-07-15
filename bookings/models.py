@@ -4,6 +4,9 @@ from properties.models import Property
 from decimal import Decimal
 from django.db.models import Sum
 from reyes_estancias import settings
+import uuid
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -15,7 +18,11 @@ class Booking(models.Model):
     ("expired", "Expirada"),
     ("completed", "Completada"),
     ]
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuario")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Usuario")
+    guest_name  = models.CharField(max_length=200, blank=True, default="", verbose_name="Nombre huésped")
+    guest_email = models.EmailField(blank=True, default="", verbose_name="Email huésped")
+    guest_phone = models.CharField(max_length=20, blank=True, default="", verbose_name="Teléfono huésped")
+    access_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="Token de acceso")
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="bookings")
     person_num = models.IntegerField(verbose_name="Cant.Personas")
     arrival = models.DateTimeField(verbose_name="LLegada")
@@ -68,19 +75,45 @@ class Booking(models.Model):
         verbose_name = "Reserva"
         verbose_name_plural = "Reservas"
         indexes = [
-            # Índice para búsquedas de disponibilidad (query más frecuente)
             models.Index(fields=['property', 'status', 'arrival', 'departure'], name='booking_avail_idx'),
-            # Índice para listados de usuario
-            models.Index(fields=['user', 'status'], name='booking_user_idx'),
-            # Índice para expiración de holds
+            models.Index(fields=['guest_email', 'status'], name='booking_guest_email_idx'),
             models.Index(fields=['status', 'hold_expires_at'], name='booking_hold_idx'),
-            # Índice para queries por fecha de llegada
             models.Index(fields=['arrival', 'departure'], name='booking_dates_idx'),
         ]
 
     def __str__(self):
-        return f"{self.property.name} - {self.user.username} - ({self.arrival} => {self.departure})"
+        guest = self.guest_name or (self.user.username if self.user else "Sin huésped")
+        return f"{self.property.name} - {guest} - ({self.arrival} => {self.departure})"
     
+
+MAGIC_LINK_TTL_MINUTES = 20
+
+class MagicLink(models.Model):
+    email      = models.EmailField(verbose_name="Email")
+    token      = models.UUIDField(default=uuid.uuid4, unique=True, verbose_name="Token")
+    expires_at = models.DateTimeField(verbose_name="Expira")
+    used       = models.BooleanField(default=False, verbose_name="Usado")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Creado")
+
+    class Meta:
+        verbose_name = "Magic Link"
+        verbose_name_plural = "Magic Links"
+        indexes = [
+            models.Index(fields=['token'], name='magiclink_token_idx'),
+            models.Index(fields=['email', 'used'], name='magiclink_email_idx'),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=MAGIC_LINK_TTL_MINUTES)
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        return not self.used and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"{self.email} — {'usado' if self.used else 'activo'}"
+
 
 class BookingChangeLog(models.Model):
     LOG_STATUS_CHOICES = [

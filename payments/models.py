@@ -73,7 +73,9 @@ class Payment(models.Model):
         ]
 
     def __str__(self):
-        return f"Pago de {self.booking.user.username} => {self.booking.property.name} - {self.status}"
+        b = self.booking
+        guest = b.guest_name or (b.user.email if b.user else b.guest_email or "Sin huésped")
+        return f"Pago de {guest} => {b.property.name} - {self.status}"
     
 
 class RefundLog(models.Model):

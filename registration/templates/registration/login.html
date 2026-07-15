@@ -60,7 +60,7 @@
 
       {% if form.non_field_errors %}
         <div class="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          Usuario o contraseña incorrectos, prueba de nuevo.
+          Email o contraseña incorrectos, prueba de nuevo.
         </div>
       {% endif %}
 
@@ -69,8 +69,9 @@
 
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                 for="id_username">Usuario</label>
-          <input id="id_username" type="text" name="username" placeholder="Tu nombre de usuario"
+                 for="id_username">Correo electrónico</label>
+          <input id="id_username" type="email" name="username" placeholder="Tu correo electrónico"
+                 autocomplete="email"
                  class="w-full rounded-xl border border-neutral-200 bg-slate-50 px-4 py-2.5 text-sm
                         outline-none placeholder:text-neutral-400
                         focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20

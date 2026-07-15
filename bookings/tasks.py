@@ -1,7 +1,8 @@
 from celery import shared_task
 from django.utils import timezone
 from django.db.models import Q
-from .models import Booking
+from datetime import timedelta
+from .models import Booking, MagicLink
 from payments.services import compute_balance_due_snapshot
 import logging
 
@@ -106,3 +107,24 @@ def mark_expired_holds():
     else:
         logger.debug("No hay holds expirados para marcar")
         return "holds_expired=0"
+
+
+@shared_task
+def purge_magic_links():
+    """
+    Limpia registros MagicLink obsoletos:
+      - Expirados (expires_at < now), usados o no.
+      - Usados hace más de 24 h (margen de depuración para soporte).
+    """
+    now = timezone.now()
+    deleted, _ = MagicLink.objects.filter(
+        Q(expires_at__lt=now) |
+        Q(used=True, created_at__lt=now - timedelta(hours=24))
+    ).delete()
+
+    if deleted:
+        logger.info("purge_magic_links: eliminados %d registros.", deleted)
+    else:
+        logger.debug("purge_magic_links: nada que eliminar.")
+
+    return f"deleted={deleted}"

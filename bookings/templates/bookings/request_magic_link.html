@@ -1,0 +1,86 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Mis Reservas — Reyes Estancias{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-md">
+
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Mis Reservas</h1>
+      <p class="mt-2 text-sm text-slate-500">
+        Introduce tu correo y te enviaremos un enlace para acceder a tus reservas.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+
+      {% if sent %}
+        <!-- Estado: email enviado (respuesta idéntica independientemente de si existe el email) -->
+        <div class="text-center py-4">
+          <div class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+            <svg class="h-7 w-7 text-slate-700" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-slate-900">Revisa tu correo</h2>
+          <p class="mt-2 text-sm text-slate-500">
+            Si el correo tiene reservas asociadas, recibirás un enlace de acceso en unos segundos.
+            El enlace caduca en 20 minutos.
+          </p>
+          <p class="mt-6 text-xs text-slate-400">
+            ¿No has recibido nada? Revisa la carpeta de spam o
+            <a href="{% url 'request_magic_link' %}"
+               class="font-medium text-slate-700 underline underline-offset-2">
+              vuelve a intentarlo
+            </a>.
+          </p>
+        </div>
+
+      {% else %}
+        <!-- Estado: formulario -->
+        {% if messages %}
+          {% for msg in messages %}
+            <div class="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" class="space-y-5">
+          {% csrf_token %}
+
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                   for="{{ form.email.id_for_label }}">
+              {{ form.email.label }}
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.email.errors|striptags }}</p>
+            {% endif %}
+          </div>
+
+          <button type="submit"
+                  class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white
+                         transition-all duration-150 hover:bg-slate-700 active:scale-[.98]">
+            Enviar enlace de acceso
+          </button>
+        </form>
+
+        <div class="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
+          ¿Tienes cuenta?
+          <a href="{% url 'login' %}"
+             class="font-semibold text-slate-900 underline underline-offset-2 hover:text-slate-600">
+            Inicia sesión
+          </a>
+        </div>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
