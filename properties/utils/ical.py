@@ -1,20 +1,21 @@
 # properties/utils/ical.py
+import re
 import requests
-from icalendar import Calendar, Event
-from datetime import datetime, timedelta, date
-from django.utils.timezone import make_aware, now, is_aware
-from urllib.parse import urlparse
+import hashlib
 import logging
+from datetime import datetime, timedelta, date
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.core.cache import cache
-import hashlib
+from django.utils.timezone import make_aware, now, is_aware
+from icalendar import Calendar, Event
 
 logger = logging.getLogger(__name__)
 
-# Configuración de seguridad para fetch de iCal
-ICAL_REQUEST_TIMEOUT = getattr(settings, 'ICAL_REQUEST_TIMEOUT', 10)  # segundos
+ICAL_REQUEST_TIMEOUT = getattr(settings, 'ICAL_REQUEST_TIMEOUT', 10)
 ICAL_MAX_SIZE = getattr(settings, 'ICAL_MAX_SIZE', 5 * 1024 * 1024)  # 5 MB
-ICAL_CACHE_TIMEOUT = getattr(settings, 'ICAL_CACHE_TIMEOUT', 900)  # 15 minutos
+ICAL_CACHE_TIMEOUT = getattr(settings, 'ICAL_CACHE_TIMEOUT', 900)    # 15 minutos
 ICAL_ALLOWED_HOSTS = getattr(settings, 'ICAL_ALLOWED_HOSTS', [
     'airbnb.com',
     'airbnb.es',
@@ -25,118 +26,65 @@ ICAL_ALLOWED_HOSTS = getattr(settings, 'ICAL_ALLOWED_HOSTS', [
     'homeaway.com',
 ])
 
-def fetch_ical_bookings(ical_url):
-    """
-    Obtiene reservas de un calendario iCal externo de forma segura.
 
-    Protecciones implementadas:
-    - Caché de 15 minutos (configurable) para evitar peticiones repetidas
-    - Validación de URL (solo HTTP/HTTPS)
-    - Whitelist de hosts permitidos
-    - Timeout de conexión
-    - Límite de tamaño de respuesta
-    - Logging de errores y métricas de caché
-
-    Args:
-        ical_url: URL del calendario iCal
-
-    Returns:
-        list: Lista de tuplas (start_date, end_date)
-
-    Raises:
-        ValueError: Si la URL es inválida o el host no está permitido
-        requests.exceptions.RequestException: Si hay error en la petición
-    """
-    # 0. Intentar obtener del caché primero
-    # Generar clave única basada en la URL (usar hash SHA256 para seguridad)
-    cache_key = f'ical_bookings:{hashlib.sha256(ical_url.encode()).hexdigest()}'
-
-    cached_result = cache.get(cache_key)
-    if cached_result is not None:
-        logger.info(f"iCal cache HIT for {urlparse(ical_url).netloc} (usando datos en caché)")
-        return cached_result
-
-    logger.info(f"iCal cache MISS for {urlparse(ical_url).netloc} (haciendo petición HTTP)")
-
-    # 1. Validar que sea una URL válida
+def _validate_url(ical_url):
+    """Validates the URL scheme and host whitelist. Returns parsed URL or raises ValueError."""
     try:
-        parsed_url = urlparse(ical_url)
+        parsed = urlparse(ical_url)
     except Exception as e:
-        logger.error(f"Invalid URL format: {ical_url[:100]}, error: {e}")
         raise ValueError(f"Formato de URL inválido: {e}")
 
-    # 2. Validar esquema (solo http/https)
-    if parsed_url.scheme not in ['http', 'https']:
-        logger.warning(f"Invalid URL scheme: {parsed_url.scheme} for URL: {ical_url[:100]}")
-        raise ValueError(f"El esquema de URL debe ser http o https, no '{parsed_url.scheme}'")
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError(f"El esquema de URL debe ser http o https, no '{parsed.scheme}'")
 
-    # 3. Validar que el host esté en la whitelist
-    host = parsed_url.netloc.lower()
+    host = parsed.netloc.lower()
     if not host:
         raise ValueError("URL sin host válido")
 
-    # Verificar si el host o alguno de sus dominios padre está en la whitelist
-    host_allowed = False
-    for allowed_host in ICAL_ALLOWED_HOSTS:
-        if host == allowed_host or host.endswith('.' + allowed_host):
-            host_allowed = True
-            break
-
-    if not host_allowed:
-        logger.warning(f"Host not in whitelist: {host} for URL: {ical_url[:100]}")
+    if not any(host == h or host.endswith('.' + h) for h in ICAL_ALLOWED_HOSTS):
         raise ValueError(
             f"El host '{host}' no está en la lista de proveedores permitidos. "
             f"Hosts permitidos: {', '.join(ICAL_ALLOWED_HOSTS)}"
         )
 
-    # 4. Hacer la petición con protecciones
-    try:
-        logger.info(f"Fetching iCal from {host}: {ical_url[:100]}...")
+    return parsed
 
+
+def _fetch_raw_content(ical_url, host):
+    """Makes the HTTP request and returns raw bytes. Raises on any error."""
+    try:
         response = requests.get(
             ical_url,
             timeout=ICAL_REQUEST_TIMEOUT,
-            stream=True,  # Stream para verificar tamaño antes de descargar todo
+            stream=True,
             headers={
                 'User-Agent': 'ReyesEstancias/1.0 (Calendar Sync)',
                 'Accept': 'text/calendar, application/octet-stream, */*',
             },
-            allow_redirects=True,  # Permite redirects (max 30 por defecto en requests)
+            allow_redirects=True,
         )
         response.raise_for_status()
-
     except requests.exceptions.Timeout:
-        logger.error(f"Timeout fetching iCal from {host}: {ical_url[:100]}")
         raise ValueError(f"Timeout al obtener el calendario de {host} (>{ICAL_REQUEST_TIMEOUT}s)")
-
     except requests.exceptions.ConnectionError as e:
-        logger.error(f"Connection error fetching iCal from {host}: {e}")
         raise ValueError(f"Error de conexión al obtener el calendario de {host}")
-
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP error fetching iCal from {host}: {e.response.status_code}")
         raise ValueError(f"Error HTTP {e.response.status_code} al obtener el calendario")
-
     except requests.exceptions.RequestException as e:
-        logger.error(f"Request error fetching iCal from {host}: {e}")
         raise ValueError(f"Error al obtener el calendario: {e}")
 
-    # 5. Verificar tamaño del contenido
     content_length = response.headers.get('content-length')
     if content_length and int(content_length) > ICAL_MAX_SIZE:
-        logger.warning(f"iCal file too large: {content_length} bytes from {host}")
         raise ValueError(
             f"El archivo de calendario es demasiado grande "
             f"({int(content_length) / 1024 / 1024:.1f} MB, máximo {ICAL_MAX_SIZE / 1024 / 1024} MB)"
         )
 
-    # 6. Leer contenido con límite
     try:
         content = b''
         for chunk in response.iter_content(chunk_size=8192):
             content += chunk
             if len(content) > ICAL_MAX_SIZE:
-                logger.warning(f"iCal content exceeded max size while reading from {host}")
                 raise ValueError(
                     f"El archivo de calendario excede el tamaño máximo permitido "
                     f"({ICAL_MAX_SIZE / 1024 / 1024} MB)"
@@ -144,77 +92,141 @@ def fetch_ical_bookings(ical_url):
     finally:
         response.close()
 
-    # 7. Parsear el calendario
+    return content
+
+
+_GENERIC_SUMMARIES = {
+    "reserved", "reservado", "reservée", "réservé",
+    "airbnb", "not available", "no disponible", "blocked", "bloqueado",
+}
+
+def _parse_summary(raw: str) -> str:
+    """Returns the summary if it looks like a real name, empty string otherwise."""
+    clean = raw.strip()
+    if clean.lower() in _GENERIC_SUMMARIES:
+        return ""
+    return clean[:200]
+
+
+def _parse_description(raw: str) -> dict:
+    """
+    Extracts phone digits and confirmation code from Airbnb's DESCRIPTION field.
+
+    Airbnb actual format:
+        Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMEZEDPKFQ
+        Phone Number (Last 4 Digits): 4388
+    """
+    result = {"phone": "", "confirmation_code": ""}
+    if not raw:
+        return result
+
+    # Confirmation code is the last path segment of the reservation URL
+    url_match = re.search(r'/reservations/details/([A-Z0-9]{6,20})', raw)
+    if url_match:
+        result["confirmation_code"] = url_match.group(1)
+
+    # Phone: Airbnb only sends last 4 digits
+    phone_match = re.search(
+        r'(?:phone|tel[eé]fono?)[^:]*:\s*([\d\s\-().+]{4,20})',
+        raw, re.IGNORECASE,
+    )
+    if phone_match:
+        result["phone"] = phone_match.group(1).strip()
+
+    return result
+
+
+def _to_date(value):
+    """Converts iCal dtstart/dtend value to a plain date."""
+    if isinstance(value, datetime):
+        if not is_aware(value):
+            value = make_aware(value)
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return None
+
+
+def fetch_ical_events(ical_url):
+    """
+    Fetches and parses an iCal feed.
+
+    Returns a list of dicts: {uid, start (date), end (date), summary (str)}
+    Results are cached for ICAL_CACHE_TIMEOUT seconds.
+
+    Raises:
+        ValueError: on invalid URL, disallowed host, HTTP error, or parse error
+    """
+    cache_key = f'ical_events:{hashlib.sha256(ical_url.encode()).hexdigest()}'
+
+    cached = cache.get(cache_key)
+    if cached is not None:
+        logger.info(f"iCal cache HIT for {urlparse(ical_url).netloc}")
+        return cached
+
+    parsed = _validate_url(ical_url)
+    host = parsed.netloc.lower()
+
+    logger.info(f"iCal cache MISS for {host} — fetching…")
+    content = _fetch_raw_content(ical_url, host)
+
     try:
-        calendar = Calendar.from_ical(content)
+        cal = Calendar.from_ical(content)
     except Exception as e:
-        logger.error(f"Error parsing iCal from {host}: {e}")
         raise ValueError(f"Error al parsear el calendario: formato inválido")
 
-    # 8. Extraer reservas
-    bookings = []
-    for component in calendar.walk():
+    events = []
+    for component in cal.walk():
         if component.name != "VEVENT":
             continue
-
         try:
-            start = component.get("dtstart").dt
-            end = component.get("dtend").dt
-
-            # Convertir datetime a date si es necesario
-            if isinstance(start, datetime):
-                if not is_aware(start):
-                    start = make_aware(start)
-                start = start.date()
-            elif not isinstance(start, date):
-                logger.warning(f"Invalid start date type: {type(start)}")
+            start = _to_date(component.get("dtstart").dt)
+            end = _to_date(component.get("dtend").dt)
+            if start is None or end is None:
                 continue
-
-            if isinstance(end, datetime):
-                if not is_aware(end):
-                    end = make_aware(end)
-                end = end.date()
-            elif not isinstance(end, date):
-                logger.warning(f"Invalid end date type: {type(end)}")
-                continue
-
-            bookings.append((start, end))
-
+            uid = str(component.get("uid", "")).strip()
+            summary = _parse_summary(str(component.get("summary", "")))
+            description = _parse_description(str(component.get("description", "")))
+            events.append({
+                "uid": uid,
+                "start": start,
+                "end": end,
+                "summary": summary,
+                "phone": description["phone"],
+                "confirmation_code": description["confirmation_code"],
+            })
         except Exception as e:
-            # Si un evento individual falla, log y continuar
             logger.warning(f"Error parsing iCal event from {host}: {e}")
             continue
 
-    logger.info(f"Successfully fetched {len(bookings)} bookings from {host}")
+    logger.info(f"Fetched {len(events)} events from {host}")
+    cache.set(cache_key, events, ICAL_CACHE_TIMEOUT)
+    return events
 
-    # Guardar en caché antes de retornar
-    cache.set(cache_key, bookings, ICAL_CACHE_TIMEOUT)
-    logger.info(f"iCal data cached for {ICAL_CACHE_TIMEOUT} seconds ({ICAL_CACHE_TIMEOUT / 60:.1f} minutes)")
 
-    return bookings
+def fetch_ical_bookings(ical_url):
+    """
+    Backward-compatible wrapper around fetch_ical_events.
+    Returns list of (start_date, end_date) tuples.
+    """
+    return [(e["start"], e["end"]) for e in fetch_ical_events(ical_url)]
+
 
 def get_blocked_dates(ical_url):
     ranges = fetch_ical_bookings(ical_url)
     blocked = set()
-
     for start, end in ranges:
         current = start
         while current < end:
             blocked.add(current)
             current += timedelta(days=1)
-
     return sorted(blocked)
+
 
 def generate_ical_for_property(property_obj):
     """
-    Genera un calendario iCal con las reservas confirmadas y pendientes (hold activo)
-    de una propiedad, para que Airbnb bloquee esas fechas.
-
-    Args:
-        property_obj: Instancia de Property
-
-    Returns:
-        Calendar: Objeto icalendar.Calendar listo para serializar
+    Generates an iCal calendar with confirmed and active-hold bookings
+    for a property, so Airbnb can block those dates.
     """
     from django.db.models import Q
 
@@ -228,7 +240,6 @@ def generate_ical_for_property(property_obj):
 
     current_time = now()
 
-    # Confirmed + pending con hold todavía vigente
     bookings = property_obj.bookings.filter(
         Q(status='confirmed') |
         Q(status='pending', hold_expires_at__gt=current_time)
@@ -236,17 +247,14 @@ def generate_ical_for_property(property_obj):
 
     for booking in bookings:
         event = Event()
-
         event.add('dtstart', booking.arrival)
         event.add('dtend', booking.departure)
         event.add('dtstamp', current_time)
         event.add('summary', 'Reservado')
         event.add('uid', f'booking_{booking.id}@reyesestancias.com')
-
         event.add('status', 'CONFIRMED')
         event.add('transp', 'OPAQUE')
         event.add('description', f'Reserva para {booking.person_num} persona(s)')
-
         cal.add_component(event)
 
     return cal

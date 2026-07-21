@@ -9,7 +9,14 @@
 {% endblock %}
 
 {% block content %}
-<h1>Calendario de Reservas</h1>
+<div class="cal-topbar">
+  <h1>Calendario de Reservas</h1>
+  <a href="{% url 'admin:bookings_sync_airbnb' %}?year={{ year }}&month={{ month }}"
+     class="cal-sync-btn"
+     onclick="this.textContent='Sincronizando…'; this.style.pointerEvents='none';">
+    ↻ Sincronizar Airbnb
+  </a>
+</div>
 
 <!-- Navegación de mes -->
 <div class="cal-nav">
@@ -46,7 +53,7 @@
       <!-- Bloques de reserva -->
       {% for booking in prop.bookings %}
       <a href="{{ booking.url }}"
-         class="booking-block {{ booking.status }}"
+         class="booking-block {{ booking.css_class }}"
          style="left: calc({{ booking.left_pct }}% + 2px); width: calc({{ booking.width_pct }}% - 4px);"
          title="{{ booking.status_label }}: {{ booking.user }}&#10;{{ booking.arrival }} → {{ booking.departure }}">
         {{ booking.user }}
@@ -71,6 +78,10 @@
   <div class="legend-item">
     <div class="legend-dot" style="background:#2563eb"></div>
     Completada
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#e11d48"></div>
+    Airbnb
   </div>
 </div>
 

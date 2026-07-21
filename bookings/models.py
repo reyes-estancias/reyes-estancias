@@ -18,6 +18,13 @@ class Booking(models.Model):
     ("expired", "Expirada"),
     ("completed", "Completada"),
     ]
+    SOURCE_CHOICES = [
+        ("web", "Web"),
+        ("airbnb", "Airbnb"),
+    ]
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="web", verbose_name="Origen")
+    ical_uid = models.CharField(max_length=500, blank=True, default="", db_index=True, verbose_name="UID iCal")
+    airbnb_confirmation_code = models.CharField(max_length=50, blank=True, default="", verbose_name="Código confirmación Airbnb")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Usuario")
     guest_name  = models.CharField(max_length=200, blank=True, default="", verbose_name="Nombre huésped")
     guest_email = models.EmailField(blank=True, default="", verbose_name="Email huésped")

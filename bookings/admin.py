@@ -3,7 +3,7 @@ from datetime import date
 
 from django.contrib import admin, messages
 from django.urls import path, reverse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 
 from properties.models import Property
@@ -26,9 +26,17 @@ STATUS_LABELS = {
 
 
 class AdminBooking(admin.ModelAdmin):
-    list_display = ("id", "property__name", "user", "arrival", "departure", "status")
-    list_filter = ("property__name", "user__username", "arrival", "departure", "status")
-    readonly_fields = ("hold_expires_at",)
+    list_display = ("id", "property__name", "source", "user", "guest_name", "arrival", "departure", "status")
+    list_filter = ("property__name", "source", "status", "arrival", "departure")
+    readonly_fields = ("hold_expires_at", "source", "ical_uid", "airbnb_confirmation_code", "guest_phone_display")
+
+    @admin.display(description="Teléfono huésped")
+    def guest_phone_display(self, obj):
+        if not obj.guest_phone:
+            return "—"
+        if obj.source == "airbnb":
+            return f"{obj.guest_phone} (últimos 4 dígitos — dato limitado de Airbnb)"
+        return obj.guest_phone
     change_list_template = "admin/bookings/booking/change_list.html"
     actions = ["action_expire_holds", "action_expire_completed"]
 
@@ -60,8 +68,36 @@ class AdminBooking(admin.ModelAdmin):
                 self.admin_site.admin_view(self._calendario_view),
                 name="bookings_calendario",
             ),
+            path(
+                "sync-airbnb/",
+                self.admin_site.admin_view(self._sync_airbnb_view),
+                name="bookings_sync_airbnb",
+            ),
         ]
         return extra + urls
+
+    def _sync_airbnb_view(self, request):
+        from properties.tasks import sync_all_property_calendars
+        try:
+            result = sync_all_property_calendars()
+            total = result.get("total_bookings", 0)
+            errors = result.get("errors", 0)
+            if errors:
+                self.message_user(
+                    request,
+                    f"Sync completado con {errors} error(es). {total} reservas sincronizadas.",
+                    messages.WARNING,
+                )
+            else:
+                self.message_user(
+                    request,
+                    f"Sync de Airbnb completado: {total} reservas sincronizadas.",
+                    messages.SUCCESS,
+                )
+        except Exception as e:
+            self.message_user(request, f"Error al sincronizar: {e}", messages.ERROR)
+
+        return redirect(reverse("admin:bookings_calendario") + f"?year={request.GET.get('year', '')}&month={request.GET.get('month', '')}")
 
     def _calendario_view(self, request):
         today = date.today()
@@ -124,11 +160,16 @@ class AdminBooking(admin.ModelAdmin):
             left_pct = f"{col_start / num_days * 100:.4f}"
             width_pct = f"{duration / num_days * 100:.4f}"
 
+            is_airbnb = b.source == "airbnb"
+            label = b.guest_name if is_airbnb else (
+                (b.user.get_full_name() or b.user.email) if b.user else (b.guest_name or b.guest_email or "Invitado")
+            )
             bookings_by_prop.setdefault(b.property_id, []).append({
                 "id": b.id,
-                "user": (b.user.get_full_name() or b.user.email) if b.user else (b.guest_name or b.guest_email or "Invitado"),
+                "user": label,
                 "status": b.status,
-                "status_label": STATUS_LABELS.get(b.status, b.status),
+                "css_class": "airbnb" if is_airbnb else b.status,
+                "status_label": "Reserva Airbnb" if is_airbnb else STATUS_LABELS.get(b.status, b.status),
                 "arrival": b.arrival.strftime("%d/%m/%Y"),
                 "departure": b.departure.strftime("%d/%m/%Y"),
                 "left_pct": left_pct,

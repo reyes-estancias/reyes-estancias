@@ -22,10 +22,11 @@ def mark_expired_bookings():
     now = timezone.now()
 
     # Buscar reservas confirmadas que ya pasaron su fecha de checkout
+    # Las reservas de Airbnb las gestiona el sync de iCal, no este task
     expired_bookings = Booking.objects.filter(
         status="confirmed",
-        departure__lt=now  # departure menor que ahora = ya pasó
-    )
+        departure__lt=now,
+    ).exclude(source="airbnb")
 
     count = expired_bookings.count()
 
@@ -54,10 +55,11 @@ def mark_completed_bookings():
     """
     now = timezone.now()
 
+    # Las reservas de Airbnb tienen total_amount=0 y se marcarían siempre como completed
     candidates = Booking.objects.filter(
         status="confirmed",
         departure__lt=now,
-    )
+    ).exclude(source="airbnb")
 
     completed = 0
     for booking in candidates.iterator():

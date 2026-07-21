@@ -5,11 +5,10 @@ from payments.models import Payment
 
 @receiver(post_save, sender=Booking)
 def create_payment_for_booking(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.source == "web":
         Payment.objects.create(
-            booking = instance,
-            status = "pending",
-            amount = 0.00,
-            currency = "MXN",
-
+            booking=instance,
+            status="pending",
+            amount=0.00,
+            currency="MXN",
         )
