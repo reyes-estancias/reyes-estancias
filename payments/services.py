@@ -502,7 +502,7 @@ def trigger_refund_for_reduction(booking, amount):
 
 
 def send_booking_confirmation_email(booking, base_url=None):
-    """Envía email de confirmación al huésped con links de gestión por access_token."""
+    """Envía email de confirmación al huésped y notificación a los dueños."""
     base = (base_url or getattr(settings, "SITE_BASE_URL", None) or "http://127.0.0.1:8000").rstrip("/")
     cancel_url      = f"{base}{reverse('cancel_booking_sure_token', kwargs={'token': booking.access_token})}"
     change_dates_url = f"{base}{reverse('booking_change_dates_start_token', kwargs={'token': booking.access_token})}"
@@ -528,6 +528,41 @@ def send_booking_confirmation_email(booking, base_url=None):
         )
     except Exception:
         logger.exception("Error enviando email de confirmación para booking %s", booking.id)
+
+    owner_emails = getattr(settings, "OWNER_NOTIFICATION_EMAILS", [])
+    if owner_emails:
+        owner_subject = f"Nueva reserva — {booking.property.name} · {booking.arrival.strftime('%d/%m/%Y')} → {booking.departure.strftime('%d/%m/%Y')}"
+        owner_message = (
+            f"Nueva reserva de {booking.guest_name} ({booking.guest_email}) "
+            f"en {booking.property.name} "
+            f"del {booking.arrival.date()} al {booking.departure.date()}."
+        )
+        owner_html = render_to_string("emails/booking_notification_owner.html", {"booking": booking})
+        try:
+            if settings.DEBUG:
+                from django.core.mail.backends.console import EmailBackend
+                from django.core.mail import EmailMultiAlternatives
+                with EmailBackend() as conn:
+                    msg = EmailMultiAlternatives(
+                        subject=owner_subject,
+                        body=owner_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=owner_emails,
+                        connection=conn,
+                    )
+                    msg.attach_alternative(owner_html, "text/html")
+                    msg.send()
+            else:
+                send_mail(
+                    subject=owner_subject,
+                    message=owner_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=owner_emails,
+                    html_message=owner_html,
+                    fail_silently=False,
+                )
+        except Exception:
+            logger.exception("Error enviando notificación a dueños para booking %s", booking.id)
 
 
 def compute_balance_due_snapshot(booking) -> Decimal:

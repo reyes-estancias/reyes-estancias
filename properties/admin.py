@@ -46,12 +46,12 @@ class PropertyImageInline(admin.TabularInline):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ("name", "max_people", "nightly_price", "airbnb_ical_url")
+    list_display = ("name", "email_group", "max_people", "nightly_price", "airbnb_ical_url")
     inlines = [PropertyImageInline]
     change_form_template = "admin/properties/property/change_form.html"
     search_fields = ("name",)
     fieldsets = (
-        (None, {"fields": ("name", "beds", "max_people", "nightly_price", "address", "latitude", "longitude")}),
+        (None, {"fields": ("name", "email_group", "beds", "max_people", "nightly_price", "address", "latitude", "longitude")}),
         ("Descripción", {"fields": ("description", "tu_propiedad", "servicios_zonas_comunes", "interaccion_viajeros", "otros_detalles")}),
         ("Integración iCal", {"fields": ("airbnb_ical_url",)}),
     )

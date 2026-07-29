@@ -117,6 +117,130 @@
                 </tr>
               </table>
 
+              <!-- ============================================================ -->
+              <!-- INSTRUCCIONES DE LLEGADA (según propiedad)                   -->
+              <!-- ============================================================ -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                <tr>
+                  <td style="border-left:4px solid #0f172a;padding:0 0 0 16px;">
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:bold;text-transform:uppercase;
+                               letter-spacing:1px;color:#64748b;">Información de llegada</p>
+
+                    {% with group=booking.property.email_group %}
+
+                    {% if group == "expo_aguamarina" %}
+                      <p style="margin:0 0 10px;font-size:14px;color:#1e293b;">
+                        Buen día <strong>{{ guest_name }}</strong>, le agradecemos su preferencia.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le pedimos de favor se ponga en contacto con nosotros el día de su llegada
+                        (<strong>{{ booking.arrival|date:"d/m/Y" }}</strong>) a este número principalmente
+                        <strong>3318101813</strong> o al <strong>3314494215</strong>. En cualquier caso especial
+                        tenemos otros números de contacto en los cuales se puede apoyar en los detalles de esta reserva.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le dejamos la dirección aquí también, aunque la puede encontrar en los detalles de la reserva:<br>
+                        <strong>Calle Esmeralda 2868, Esmeralda, 44540, Guadalajara, Jalisco</strong>
+                      </p>
+                      <p style="margin:0 0 6px;font-size:14px;color:#475569;">
+                        Es importante que nos llamen cuando estén a unos minutos de llegar, ya que en el GPS la casa
+                        no siempre aparece correctamente, así podemos agilizar su proceso de llegada.
+                      </p>
+                      <p style="margin:0 0 6px;font-size:14px;color:#475569;">
+                        <strong>Red WiFi:</strong> Hospedaje_HR &nbsp;|&nbsp; <strong>Contraseña:</strong> hospedaje1234
+                      </p>
+                      <p style="margin:0 0 10px;font-size:13px;color:#dc2626;font-weight:bold;">
+                        NOTA IMPORTANTE: El horario de silencio es de 11 pm a 7 am. De no respetarse se cancelará
+                        la reserva y se tendrá que hacer desalojo de la casa sin reembolso alguno.
+                        No está permitido ningún tipo de fiesta. Contamos con facturación de requerirla.
+                      </p>
+
+                    {% elif group == "departamentos" %}
+                      <p style="margin:0 0 10px;font-size:14px;color:#1e293b;">
+                        Buen día <strong>{{ guest_name }}</strong>, le agradecemos su preferencia.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le pedimos de favor se ponga en contacto con nosotros el día de su llegada
+                        (<strong>{{ booking.arrival|date:"d/m/Y" }}</strong>) a este número principalmente
+                        <strong>3318101813</strong> o al <strong>3314494215</strong>. En cualquier caso especial
+                        tenemos otros números de contacto en los cuales se puede apoyar en los detalles de esta reserva.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le dejamos la dirección aquí también, aunque la puede encontrar en los detalles de la reserva:<br>
+                        <strong>Calle Privada los Mirasoles 38, 45230, Zapopan, Jalisco</strong>
+                      </p>
+                      <p style="margin:0 0 6px;font-size:14px;color:#475569;">
+                        Las redes WiFi disponibles junto con sus contraseñas son las siguientes:
+                      </p>
+                      <p style="margin:0 0 4px;font-size:13px;color:#475569;">
+                        Hospedajehr1 &nbsp;|&nbsp; Contraseña: hospedaje1234
+                      </p>
+                      <p style="margin:0 0 4px;font-size:13px;color:#475569;">
+                        Hospedajehr2 &nbsp;|&nbsp; Contraseña: hospedaje1234
+                      </p>
+                      <p style="margin:0 0 12px;font-size:13px;color:#475569;">
+                        Hospedaje3 &nbsp;|&nbsp; Contraseña: hospedaje1234
+                      </p>
+                      <p style="margin:0;font-size:14px;color:#475569;">
+                        Estamos a sus órdenes para cualquier duda.
+                      </p>
+
+                    {% else %}
+                      <p style="margin:0 0 10px;font-size:14px;color:#1e293b;">
+                        Buen día <strong>{{ guest_name }}</strong>, le agradecemos su preferencia.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le pedimos de favor se ponga en contacto con nosotros el día de su llegada
+                        (<strong>{{ booking.arrival|date:"d/m/Y" }}</strong>) a este número principalmente
+                        <strong>3318101813</strong> o al <strong>3314494215</strong>. En cualquier caso especial
+                        tenemos otros números de contacto en los cuales se puede apoyar en los detalles de esta reserva.
+                      </p>
+                      <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                        Le dejamos la dirección aquí también, aunque la puede encontrar en los detalles de la reserva:<br>
+                        <strong>Avenida Casa Fuerte, 45646, San Agustin, Jalisco</strong>
+                      </p>
+                      <p style="margin:0 0 6px;font-size:14px;color:#475569;">
+                        <strong>Red WiFi:</strong> Hospedaje_HR &nbsp;|&nbsp; <strong>Contraseña:</strong> hospedaje1234
+                      </p>
+                      <p style="margin:0 0 10px;font-size:13px;color:#dc2626;font-weight:bold;">
+                        NOTA IMPORTANTE: El horario de silencio es de 11 pm a 7 am. De no respetarse se cancelará
+                        la reserva y se tendrá que hacer desalojo de la casa sin reembolso alguno.
+                        No está permitido ningún tipo de fiesta. Contamos con facturación de requerirla.
+                      </p>
+
+                    {% endif %}
+
+                    {% endwith %}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ============================================================ -->
+              <!-- INSTRUCCIONES DE SALIDA (igual para todas las propiedades)   -->
+              <!-- ============================================================ -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td style="border-left:4px solid #059669;padding:0 0 0 16px;">
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:bold;text-transform:uppercase;
+                               letter-spacing:1px;color:#64748b;">Información de salida</p>
+                    <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                      Buen día, para la salida puede ser hasta las 12 del mediodía.
+                    </p>
+                    <p style="margin:0 0 10px;font-size:14px;color:#475569;">
+                      Para dejarnos las llaves les pedimos de favor que las dejen pegadas por dentro de la puerta,
+                      tal como las encontraron, y les pedimos que nos envíen un mensaje cuando salgan para que el
+                      equipo de limpieza pueda pasar.
+                    </p>
+                    <p style="margin:0;font-size:14px;color:#475569;">
+                      Les agradecemos mucho el haberse hospedado con nosotros. Si quisieran tener un contacto directo
+                      y mejor precio nos pueden contactar y reservar a través de nuestra web
+                      <a href="https://www.reyesestancias.com" style="color:#0f172a;">www.reyesestancias.com</a>.
+                      ¡Fue un gusto poder alojarlos!
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
               <!-- Acciones -->
               <p style="margin:0 0 12px;font-size:14px;color:#475569;">
                 Puedes gestionar tu reserva en cualquier momento:

@@ -247,16 +247,21 @@ LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
 
 #Email config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST = env('MAILTRAP_HOST', default='sandbox.smtp.mailtrap.io')
+    EMAIL_HOST_USER = env('MAILTRAP_USER')
+    EMAIL_HOST_PASSWORD = env('MAILTRAP_PASSWORD')
+    EMAIL_PORT = env.int('MAILTRAP_PORT', default=2525)
+    EMAIL_USE_TLS = True
 else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = env('EMAIL_HOST')
     EMAIL_HOST_USER = env('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
     EMAIL_PORT = env.int('EMAIL_PORT', default=587)
     EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = 'no-reply@reyesestancias.com'
+OWNER_NOTIFICATION_EMAILS = ['reyesestancias@gmail.com', 'jos-reyes10@hotmail.com']
 
 
 #Stripe

@@ -15,7 +15,23 @@ LIMPIEZA = Decimal("100.00")
 TAX_IMPUESTOS = Decimal("0.16")
 
 class Property (models.Model):
+    EMAIL_GROUP_EXPO_AGUAMARINA = "expo_aguamarina"
+    EMAIL_GROUP_DEPARTAMENTOS = "departamentos"
+    EMAIL_GROUP_OTROS = "otros"
+    EMAIL_GROUP_CHOICES = [
+        (EMAIL_GROUP_EXPO_AGUAMARINA, "Expo / Aguamarina"),
+        (EMAIL_GROUP_DEPARTAMENTOS, "Departamentos"),
+        (EMAIL_GROUP_OTROS, "Resto de casas (Santa Anita, Moras...)"),
+    ]
+
     name = models.CharField(verbose_name= "Nombre", max_length=200)
+    email_group = models.CharField(
+        verbose_name="Grupo de email de confirmación",
+        max_length=30,
+        choices=EMAIL_GROUP_CHOICES,
+        default=EMAIL_GROUP_OTROS,
+        help_text="Determina qué instrucciones de llegada se envían al huésped.",
+    )
     description = models.TextField(verbose_name="Descripción")
     tu_propiedad = models.TextField(verbose_name="Tu propiedad", blank=True, null=True)
     servicios_zonas_comunes = models.TextField(verbose_name="Servicios y zonas comunes", blank=True, null=True)
