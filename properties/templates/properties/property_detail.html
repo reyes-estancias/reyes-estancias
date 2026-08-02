@@ -7,6 +7,9 @@
   <!-- Carrusel + Lightbox -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glider-js@1/glider.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+  {% if property.latitude and property.longitude %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  {% endif %}
 {% endblock  %}
 
     {# Navbar encima de la imagen #}
@@ -233,6 +236,21 @@
         </div>
     </section>
 
+    {% if property.latitude and property.longitude %}
+    <!-- SECCIÓN MAPA -->
+    <section class="bg-white py-12 px-4 md:px-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="rounded-2xl border border-gray-200 p-6 space-y-4">
+                <h3 class="text-xl font-semibold text-gray-900">Ubicación</h3>
+                <div id="property-map" class="w-full rounded-xl overflow-hidden" style="height:260px;"></div>
+                <div class="flex items-start gap-2 text-gray-600 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>{{ property.address }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
 
 {% endblock %}
 {% block body_extra %}
@@ -435,4 +453,41 @@
         }
     })();
     </script>
+
+    {% if property.latitude and property.longitude %}
+    {{ property.latitude|json_script:"map-lat-data" }}
+    {{ property.longitude|json_script:"map-lng-data" }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+    (function () {
+        var lat = JSON.parse(document.getElementById('map-lat-data').textContent);
+        var lng = JSON.parse(document.getElementById('map-lng-data').textContent);
+        var map = L.map('property-map', { scrollWheelZoom: false, zoomControl: true }).setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        L.circle([lat, lng], {
+            radius: 400,
+            color: 'transparent',
+            fillColor: '#6b7280',
+            fillOpacity: 0.25,
+        }).addTo(map);
+
+        var houseIcon = L.divIcon({
+            className: '',
+            html: '<div style="width:48px;height:48px;background:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.35);">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>'
+                + '</div>',
+            iconSize: [48, 48],
+            iconAnchor: [24, 24],
+        });
+        L.marker([lat, lng], { icon: houseIcon }).addTo(map);
+
+        // Forzar recálculo de dimensiones por si el contenedor tardó en renderizarse
+        setTimeout(function () { map.invalidateSize(); }, 250);
+    })();
+    </script>
+    {% endif %}
 {% endblock %}
