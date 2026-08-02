@@ -240,10 +240,13 @@ def generate_ical_for_property(property_obj):
 
     current_time = now()
 
+    # Exclude Airbnb-sourced bookings: Airbnb already knows about them,
+    # and re-exporting them back creates a circular sync that makes Airbnb
+    # show a phantom "reyesestancias" reservation with a new UID.
     bookings = property_obj.bookings.filter(
         Q(status='confirmed') |
         Q(status='pending', hold_expires_at__gt=current_time)
-    ).order_by('arrival')
+    ).exclude(source='airbnb').order_by('arrival')
 
     for booking in bookings:
         event = Event()

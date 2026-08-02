@@ -161,15 +161,27 @@ class AdminBooking(admin.ModelAdmin):
             width_pct = f"{duration / num_days * 100:.4f}"
 
             is_airbnb = b.source == "airbnb"
-            label = b.guest_name if is_airbnb else (
-                (b.user.get_full_name() or b.user.email) if b.user else (b.guest_name or b.guest_email or "Invitado")
-            )
+            is_airbnb_block = is_airbnb and not b.airbnb_confirmation_code
+
+            if is_airbnb_block:
+                css_class = "airbnb_block"
+                status_label = "Bloqueo manual Airbnb"
+                label = "Bloqueo"
+            elif is_airbnb:
+                css_class = "airbnb"
+                status_label = "Reserva cliente (Airbnb)"
+                label = b.guest_name or "Airbnb"
+            else:
+                css_class = b.status
+                status_label = STATUS_LABELS.get(b.status, b.status)
+                label = (b.user.get_full_name() or b.user.email) if b.user else (b.guest_name or b.guest_email or "Invitado")
+
             bookings_by_prop.setdefault(b.property_id, []).append({
                 "id": b.id,
                 "user": label,
                 "status": b.status,
-                "css_class": "airbnb" if is_airbnb else b.status,
-                "status_label": "Reserva Airbnb" if is_airbnb else STATUS_LABELS.get(b.status, b.status),
+                "css_class": css_class,
+                "status_label": status_label,
                 "arrival": b.arrival.strftime("%d/%m/%Y"),
                 "departure": b.departure.strftime("%d/%m/%Y"),
                 "left_pct": left_pct,

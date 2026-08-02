@@ -171,10 +171,11 @@
     box-shadow: 0 3px 8px rgba(0,0,0,0.3);
     color: white !important;
   }
-  .booking-block.confirmed { background: #16a34a; }
-  .booking-block.pending   { background: #d97706; }
-  .booking-block.completed { background: #2563eb; }
-  .booking-block.airbnb    { background: #e11d48; cursor: default; }
+  .booking-block.confirmed     { background: #16a34a; }
+  .booking-block.pending       { background: #d97706; }
+  .booking-block.completed     { background: #2563eb; }
+  .booking-block.airbnb        { background: #e11d48; cursor: default; }
+  .booking-block.airbnb_block  { background: #6b7280; cursor: default; opacity: 0.85; }
 
   /* ── Leyenda ── */
   .cal-legend {
