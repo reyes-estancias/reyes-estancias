@@ -263,6 +263,10 @@ else:
 DEFAULT_FROM_EMAIL = 'no-reply@reyesestancias.com'
 OWNER_NOTIFICATION_EMAILS = ['reyesestancias@gmail.com', 'jos-reyes10@hotmail.com']
 
+# Telegram
+TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN', default='')
+TELEGRAM_CHAT_IDS = [cid.strip() for cid in env('TELEGRAM_CHAT_IDS', default='').split(',') if cid.strip()]
+
 
 #Stripe
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")

@@ -1,5 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
 import logging
+import requests
 import stripe
 
 logger = logging.getLogger(__name__)
@@ -563,6 +564,46 @@ def send_booking_confirmation_email(booking, base_url=None):
                 )
         except Exception:
             logger.exception("Error enviando notificación a dueños para booking %s", booking.id)
+
+    _send_telegram_booking_notification(booking)
+
+
+def _send_telegram_booking_notification(booking):
+    token = getattr(settings, 'TELEGRAM_BOT_TOKEN', '')
+    chat_ids = getattr(settings, 'TELEGRAM_CHAT_IDS', [])
+    if not token or not chat_ids:
+        return
+
+    phone_line = f"\n📱 *Teléfono:* {booking.guest_phone}" if booking.guest_phone else ""
+    nights = (booking.departure.date() - booking.arrival.date()).days
+    person_label = "persona" if booking.person_num == 1 else "personas"
+
+    text = (
+        f"🏠 *Nueva reserva — {booking.property.name}*\n"
+        f"\n"
+        f"👤 *DATOS DEL CLIENTE*\n"
+        f"• Nombre: {booking.guest_name}\n"
+        f"• Email: {booking.guest_email}"
+        f"{phone_line}\n"
+        f"\n"
+        f"📋 *DETALLES DE LA RESERVA*\n"
+        f"• Check-in: {booking.arrival.strftime('%d/%m/%Y')} a las 15:00 h\n"
+        f"• Check-out: {booking.departure.strftime('%d/%m/%Y')} a las 12:00 h\n"
+        f"• Duración: {nights} noche{'s' if nights != 1 else ''}\n"
+        f"• Huéspedes: {booking.person_num} {person_label}\n"
+        f"\n"
+        f"💰 *RESUMEN ECONÓMICO*\n"
+        f"• Total reserva: ${booking.total_amount} MXN\n"
+        f"• Anticipo cobrado (30%): ${booking.deposit_amount} MXN\n"
+        f"• Saldo pendiente: ${booking.balance_due} MXN"
+    )
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    for chat_id in chat_ids:
+        try:
+            requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}, timeout=10)
+        except Exception:
+            logger.exception("Error enviando notificación Telegram para booking %s", booking.id)
 
 
 def compute_balance_due_snapshot(booking) -> Decimal:
