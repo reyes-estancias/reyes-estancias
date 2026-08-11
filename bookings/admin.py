@@ -139,7 +139,7 @@ class AdminBooking(admin.ModelAdmin):
         bookings_qs = (
             Booking.objects
             .filter(
-                status__in=["confirmed", "pending", "completed"],
+                status__in=["confirmed", "pending", "completed", "expired"],
                 arrival__date__lte=last_day,
                 departure__date__gte=first_day,
             )

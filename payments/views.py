@@ -184,7 +184,7 @@ def _retry_deposit_logic(request, booking):
 
 def _balance_start_logic(request, booking):
     """Cobro del balance (70%). Compartida por StartBalanceCheckoutView y StartBalanceByTokenView."""
-    amount = booking.balance_due_runtime()
+    amount = compute_balance_due_snapshot(booking)
     result = charge_offsession_with_fallback(
         booking=booking, request=request, amount=amount,
         payment_type="balance",
@@ -205,7 +205,17 @@ def _balance_start_logic(request, booking):
 
 def _retry_balance_logic(request, booking):
     """Reintento manual del balance. Compartida por RetryBalancePaymentView y RetryBalanceByTokenView."""
-    payment     = booking.payments.filter(payment_type="balance").order_by("-created_at").first()
+    payment = booking.payments.filter(payment_type="balance").order_by("-created_at").first()
+
+    if payment is None:
+        messages.info(request, "No hay ningún cobro de balance pendiente.")
+        return redirect("bookings_list")
+
+    # Si el balance ya está pagado, no generes otra sesión de pago (evita doble cobro).
+    if payment.status == "paid" or compute_balance_due_snapshot(booking) <= 0:
+        messages.info(request, "El balance ya está pagado.")
+        return redirect("bookings_list")
+
     success_url = request.build_absolute_uri(reverse("payment_success")) + f"?booking_id={booking.id}"
     cancel_url  = request.build_absolute_uri(reverse("payment_cancel"))  + f"?booking_id={booking.id}"
 
@@ -286,17 +296,26 @@ class CheckoutSuccesView(View):
 class CheckoutCancelView(View):
     def get(self, request):
         booking_id = request.GET.get("booking_id")
-        payment = Payment.objects.filter(booking_id=booking_id).order_by("-created_at").first()
-        if payment and payment.status == "pending":
-            payment.status = "failed"
-            payment.save(update_fields=["status"])
         try:
             booking = Booking.objects.get(pk=booking_id)
+        except Booking.DoesNotExist:
+            messages.info(request, "Operación cancelada")
+            return redirect("bookings_list")
+
+        # Solo el pago del depósito inicial (reserva aún sin confirmar) puede cancelar
+        # la reserva. Si ya está confirmada, este cancel es de un pago SECUNDARIO
+        # (balance / extensión / top-up) y NO debe cancelar una reserva ya pagada:
+        # el huésped simplemente se echó atrás en el segundo pago.
+        if booking.status == "pending":
+            payment = Payment.objects.filter(booking_id=booking_id).order_by("-created_at").first()
+            if payment and payment.status == "pending":
+                payment.status = "failed"
+                payment.save(update_fields=["status"])
             booking.status = "cancelled"
             booking.save(update_fields=["status"])
             messages.info(request, "Pago fallido, la reserva ha sido cancelada")
-        except Booking.DoesNotExist:
-            messages.info(request, "Operación cancelada")
+        else:
+            messages.info(request, "Has cancelado el pago. Tu reserva sigue activa y el saldo continúa pendiente.")
         return redirect("bookings_list")
 
 
@@ -402,10 +421,14 @@ def stripe_webhook(request):
                 update.append("balance_due")
 
             booking.save(update_fields=update)
-            _booking_sched = booking
-            transaction.on_commit(
-                lambda b=_booking_sched: reschedule_balance_charge(b, b.arrival + timedelta(days=1), settings.SITE_BASE_URL)
-            )
+
+            # Solo reprogramar cobro de balance cuando el depósito se paga (no cuando es el propio balance)
+            # Si reprogramamos después de pagar el balance, se crearía un doble cobro
+            if payment.payment_type != "balance":
+                _booking_sched = booking
+                transaction.on_commit(
+                    lambda b=_booking_sched: reschedule_balance_charge(b, b.arrival + timedelta(days=1), settings.SITE_BASE_URL)
+                )
 
             payment.stripe_payment_intent_id = pi_id
             payment.status = "paid"
@@ -425,19 +448,23 @@ def stripe_webhook(request):
     elif etype == "payment_intent.payment_failed":
         pi         = obj
         pi_id      = pi.get("id")
-        booking_id = pi.get("metadata", {}).get("booking_id")
-        payment_id = pi.get("metadata", {}).get("payment_id")
+        booking_id = (pi.get("metadata") or {}).get("booking_id")
+        payment_id = (pi.get("metadata") or {}).get("payment_id")
+        if not (booking_id and payment_id):
+            return HttpResponse(status=200)
         try:
-            booking = Booking.objects.get(pk=booking_id)
-            payment = Payment.objects.get(pk=payment_id, booking=booking)
-        except (Booking.DoesNotExist, Payment.DoesNotExist):
+            payment = Payment.objects.get(pk=payment_id, booking_id=booking_id)
+        except Payment.DoesNotExist:
+            return HttpResponse(status=200)
+        # No degradar un pago ya cobrado: los webhooks pueden llegar desordenados y un
+        # payment_failed de un intento off-session antiguo no debe revertir un balance
+        # ya pagado (lo dejaría cobrable de nuevo → doble cobro). Tampoco pisamos el
+        # stripe_payment_intent_id del intento bueno.
+        if payment.status == "paid":
             return HttpResponse(status=200)
         payment.stripe_payment_intent_id = pi_id
-        payment.save(update_fields=["stripe_payment_intent_id"])
-        payment = Payment.objects.filter(stripe_payment_intent_id=pi_id).select_related("booking").first()
-        if payment:
-            payment.status = "requires_action"
-            payment.save(update_fields=["status"])
+        payment.status = "requires_action"
+        payment.save(update_fields=["stripe_payment_intent_id", "status"])
 
     elif etype == "payment_intent.succeeded":
         pi         = obj
@@ -459,6 +486,10 @@ def stripe_webhook(request):
             payment.save(update_fields=["stripe_payment_intent_id", "status"])
             booking.balance_due = compute_balance_due_snapshot(booking)
             booking.save(update_fields=["balance_due"])
+            # Cierra cualquier Checkout Session abierta del mismo pago para impedir
+            # que se complete un segundo cobro por el link. Tras el commit (Stripe call).
+            _paid = payment
+            transaction.on_commit(lambda p=_paid: expire_open_checkout_session(p))
 
     elif etype in ("refund.updated", "charge.refunded"):
         refunds = []

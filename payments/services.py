@@ -43,7 +43,25 @@ def _to_cents(mx: Decimal) -> int:
     return int((mx * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 def ensure_balance_payment(booking, payment_type, amount):
+    from bookings.models import Booking
     with transaction.atomic():
+        # Lock sobre la fila del Booking: serializa llamadas concurrentes para la misma
+        # reserva. Sin esto, dos tasks simultáneas (scan cada 15 min + task ETA) podrían
+        # crear DOS Payment distintos → dos idempotency keys distintas → doble cobro.
+        Booking.objects.select_for_update().filter(pk=booking.pk).first()
+
+        # Para el balance solo puede existir UN cobro exitoso por reserva. Si ya está
+        # pagado, devuélvelo para que el llamador detecte "already_paid" y no cree un
+        # Payment nuevo (distinto ID → distinta idempotency key → doble cobro en Stripe).
+        # OJO: solo para "balance". Extensiones y penalizaciones pueden repetirse.
+        if payment_type == "balance":
+            paid = (booking.payments
+                    .filter(payment_type="balance", status="paid")
+                    .order_by("-id")
+                    .first())
+            if paid:
+                return paid
+
         p = (booking.payments
              .select_for_update()
              .filter(payment_type=payment_type, status__in=["pending","requires_action"])
@@ -63,9 +81,26 @@ def ensure_balance_payment(booking, payment_type, amount):
             currency="MXN",
         )
 
+def expire_open_checkout_session(payment):
+    """
+    Expira la Checkout Session abierta asociada al pago (si la hay).
+    Se usa tras cobrar por otra vía (off-session) para que un link de pago
+    todavía vivo no pueda completarse después y generar un segundo cobro.
+    """
+    session_id = getattr(payment, "stripe_checkout_session_id", None)
+    if not session_id:
+        return
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.get("status") == "open":
+            stripe.checkout.Session.expire(session_id)
+    except Exception:
+        logger.warning("No se pudo expirar la Checkout Session %s del pago %s", session_id, payment.id)
+
+
 def charge_offsession_with_fallback(
         booking, request = None,
-        amount = None, 
+        amount = None,
         payment_type = "balance",
         description = "Saldo pendiente", *, base_url: str | None = None):
     """
@@ -80,9 +115,11 @@ def charge_offsession_with_fallback(
     if amount <= 0:
         return {"status": "skipped", "msg": "Importe cero"}
 
-    if not booking.balance_due or booking.balance_due <= 0:
+    # Usa el snapshot calculado desde los pagos (fuente de verdad), no el campo
+    # denormalizado booking.balance_due, que podría estar desactualizado.
+    if compute_balance_due_snapshot(booking) <= 0:
         return {"status": "no_balance", "payment": payment}
-    
+
     if not (booking.stripe_customer_id and booking.stripe_payment_method_id):
         return {"status": "missing_method", "payment": payment}
 
@@ -111,6 +148,9 @@ def charge_offsession_with_fallback(
         if intent.status == "succeeded":
             payment.status = "paid"
             payment.save(update_fields=["stripe_payment_intent_id", "status"])
+            # Cierra cualquier link de pago (Checkout Session) que hubiera quedado abierto
+            # de un intento previo con 3DS, para que no pueda completarse un 2º cobro.
+            expire_open_checkout_session(payment)
             return {"status": "paid", "payment": payment, "intent_id": intent.id}
         
         
@@ -149,6 +189,18 @@ def charge_offsession_with_fallback(
     #Si no ha entrado en el if de arriba, significa que no se ha podido realizar el pago,
     #y si no ha entrado en el exept de justo encima, significa que ha dado Card.error
     #Continuamos con el flujo creamos sesión y le mandamos link paga que pague manualmente
+
+    # Reutiliza la Checkout Session abierta si ya existe: evita generar múltiples links
+    # de pago vivos para el mismo balance (cada scan reintentaría y crearía otra sesión →
+    # el huésped podría completar dos → doble cobro).
+    if payment.stripe_checkout_session_id:
+        try:
+            existing = stripe.checkout.Session.retrieve(payment.stripe_checkout_session_id)
+            if existing.get("status") == "open":
+                return {"status": "requires_action", "payment": payment, "checkout_url": existing.url}
+        except Exception:
+            pass
+
     success_url, cancel_url = _build_success_cancel(booking, request=request, base_url=base_url)
 
     session = stripe.checkout.Session.create(

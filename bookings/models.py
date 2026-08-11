@@ -70,12 +70,6 @@ class Booking(models.Model):
         paid_dep = self.payments.filter(payment_type="deposit", status="paid").aggregate(s=Sum("amount")) ["s"] or Decimal("0.00")
         refunded = self.payments.filter(payment_type="deposit", status="paid").aggregate(s=Sum("refunded_amount")) ["s"] or Decimal("0.00")
         return (paid_dep - refunded)
-    
-    def balance_due_runtime(self):
-        paid_ext = self.payments.filter(payment_type="extension", status="paid").aggregate(s=Sum("amount"))["s"] or Decimal("0.00")
-        paid_bal = self.payments.filter(payment_type="balance", status="paid").aggregate(s=Sum("amount"))["s"] or Decimal("0.00")
-        balance_due = self.total_amount - self.net_deposit_paid() - paid_bal - paid_ext
-        return balance_due if balance_due > 0 else Decimal("0.00")
 
 
     class Meta():

@@ -1,15 +1,18 @@
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 from datetime import timedelta
-from django.db.models import Q
-from django.contrib import messages
+from django.db.models import Exists, OuterRef
+
 from bookings.models import Booking
 from payments.models import Payment
-from payments.services import charge_balance_offsession_or_send_checkout
-from django.shortcuts import redirect
+from payments.tasks import charge_balance_for_booking
+
 
 class Command(BaseCommand):
-    help = "Cobra automáticamente el 70% off-session un día después del check-in."
+    help = (
+        "Cobra el 70% (balance) off-session de las reservas cuyo check-in fue hace >= 48h. "
+        "Reutiliza la misma lógica idempotente que el scan periódico de Celery."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -21,26 +24,22 @@ class Command(BaseCommand):
         parser.add_argument(
             "--dry-run",
             action="store_true",
-            help="Muestra qué cobraría sin ejecutar cargos.",
+            help="Muestra qué reservas se cobrarían sin ejecutar cargos.",
+        )
+        parser.add_argument(
+            "--async",
+            action="store_true",
+            dest="use_async",
+            help="Encola las tareas en Celery (.delay) en vez de ejecutarlas en el proceso actual.",
         )
 
-    def has_pending_deposit(self,booking):
-        return Payment.objects.filter(
-            booking=booking, type="deposit",
-            status__in=["pending","requires_action"]).exists()
-
-    def handle(self, request, booking, *args, **opts):
-        base_url = opts["base_url"].rstrip("/")
-        dry = opts["dry_run"]
-
-        cutoff = now() - timedelta(days=2)
-
-        if self.has_pending_deposit(booking):
-            messages.error(request, "Hay depósitos sin abonar")
-            return redirect("bookings_list")
-
-        # Candidatas: confirmadas, con saldo > 0, check-in hace >= 2 días, con customer y payment_method
-        qs = (
+    def _candidates(self):
+        cutoff = now() - timedelta(hours=48)
+        # Única subconsulta: excluye solo si existe un Payment que sea balance Y esté pagado.
+        paid_balance = Payment.objects.filter(
+            booking=OuterRef("pk"), payment_type="balance", status="paid"
+        )
+        return (
             Booking.objects
             .filter(
                 status="confirmed",
@@ -49,15 +48,17 @@ class Command(BaseCommand):
                 stripe_customer_id__isnull=False,
                 stripe_payment_method_id__isnull=False,
             )
-            # Evitar doble cobro si ya hay un balance succeeded
-            .exclude(
-                payments__payment_type="balance",
-                payments__status="paid",
-            )
+            .exclude(Exists(paid_balance))
         )
 
+    def handle(self, *args, **opts):
+        base_url = opts["base_url"].rstrip("/")
+        dry = opts["dry_run"]
+        use_async = opts["use_async"]
+
+        qs = self._candidates()
         count = qs.count()
-        self.stdout.write(self.style.NOTICE(f"Encontradas {count} reservas candidatas para cobro del saldo."))
+        self.stdout.write(self.style.NOTICE(f"Encontradas {count} reservas candidatas para cobro del balance."))
 
         processed = 0
         for b in qs.iterator():
@@ -67,15 +68,15 @@ class Command(BaseCommand):
             if dry:
                 continue
 
-            result = charge_balance_offsession_or_send_checkout(b, base_url)
-            if result == "succeeded":
-                self.stdout.write(self.style.SUCCESS(f"  Cobro off-session OK (booking #{b.id})"))
-            elif result == "requires_action":
-                self.stdout.write(self.style.WARNING(f"  Se envió email con link de pago (booking #{b.id})"))
-            elif result == "failed":
-                self.stdout.write(self.style.ERROR(f"  Fallo y no se pudo crear Checkout (booking #{b.id})"))
-            elif result == "no_balance":
-                self.stdout.write(self.style.WARNING(f"  Sin saldo (booking #{b.id})"))
+            if use_async:
+                charge_balance_for_booking.delay(b.id, base_url)
+                self.stdout.write(self.style.SUCCESS(f"  Encolada tarea de cobro (booking #{b.id})"))
+                continue
 
-        self.stdout.write(self.style.SUCCESS(f"Proceso terminado. Procesadas {processed} reservas."))
+            # Ejecución síncrona en el proceso actual para ver el resultado directamente.
+            result = charge_balance_for_booking.apply(args=[b.id, base_url]).result
+            style = self.style.SUCCESS if result in ("succeeded", "already_paid", "no_balance") else self.style.WARNING
+            self.stdout.write(style(f"  Resultado (booking #{b.id}): {result}"))
 
+        verb = "listadas" if dry else ("encoladas" if use_async else "procesadas")
+        self.stdout.write(self.style.SUCCESS(f"Proceso terminado. {processed} reservas {verb}."))

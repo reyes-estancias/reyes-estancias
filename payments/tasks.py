@@ -5,7 +5,7 @@ from django.db import transaction
 from bookings.models import Booking
 from payments.models import Payment
 from .services import charge_offsession_with_fallback, compute_balance_due_snapshot
-from django.db.models import Q
+from django.db.models import Exists, OuterRef
 import logging
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,11 @@ def charge_balance_for_booking(self, booking_id, base_url):
                 logger.warning(f"Booking {booking_id} no tiene método de pago guardado")
                 return "missing_method"
 
+            # no cobres si ya existe un balance pagado (guard contra race conditions y re-encolados)
+            if Payment.objects.filter(booking=b, payment_type="balance", status="paid").exists():
+                logger.info(f"Booking {booking_id} ya tiene balance pagado, omitiendo cobro")
+                return "already_paid"
+
             # no cobres si no hace falta
             amount = compute_balance_due_snapshot(b)
             if amount <= 0:
@@ -43,7 +48,6 @@ def charge_balance_for_booking(self, booking_id, base_url):
                 return "no_balance"
 
             # no cobres si hay top-up pendiente que bloquee
-
             if Payment.objects.filter(
                 booking=b,
                 payment_type="deposit",
@@ -99,13 +103,20 @@ def scan_and_charge_balances(base_url):
 
     cutoff = timezone.now() - timedelta(hours=48)
 
+    # Excluir reservas cuyo balance YA está pagado. Debe ser una única subconsulta
+    # (mismo Payment cumpliendo type=balance Y status=paid); con .exclude(a=.., b=..)
+    # Django genera dos EXISTS separados y excluiría reservas con depósito pagado +
+    # balance pendiente (que sí hay que cobrar).
+    paid_balance = Payment.objects.filter(
+        booking=OuterRef("pk"), payment_type="balance", status="paid"
+    )
     qs = Booking.objects.filter(
         status="confirmed",
         arrival__lte=cutoff,
         balance_due__gt=0,
         stripe_customer_id__isnull=False,
         stripe_payment_method_id__isnull=False,
-    )
+    ).exclude(Exists(paid_balance))
 
     enqueued = 0
     for b in qs.iterator(): #el iterator sirve para no cargar la qs entera en memoria, de esta manera los leemos en chunks(trozos) de 2000(valor default, pero se puede cambiar con chunk_size=lo que quieras)
